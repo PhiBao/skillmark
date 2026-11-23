@@ -1,0 +1,59 @@
+--- a/tools/skills_guard.py
++++ b/tools/skills_guard.py
+@@ -37,6 +37,9 @@
+     "builtin":       ("allow",  "allow",   "allow"),
+     "trusted":       ("allow",  "allow",   "block"),
+     "community":     ("allow",  "block",   "block"),
++    # Skillmark: an ID-verified signature promotes a community skill. The scanner still decides:
++    # dangerous remains blocked even with --force (see hard_block below).
++    "verified":      ("allow",  "allow",   "block"),
+     # "ask" = error to the agent (retry without the flagged content); when guard_agent_created is on or for background review.
+     "agent-created": ("allow",  "allow",   "ask"),
+ }
+@@ -985,12 +988,45 @@
+     return result, provenance
+ 
+ 
++# Skillmark trust-tier hook. A verifier is any callable ``(skill_path: str) -> bool``.
++# The shipped implementation shells out to ``skillmark verify <path> --json`` and only
++# promotes a skill when the CLI reports ``"result": "verified"``. It never affects the
++# scan verdict: a dangerous verdict is still blocked by INSTALL_POLICY["verified"].
++import subprocess as _skillmark_subprocess
++
++SKILLMARK_VERIFIER = None
++
++
++def skillmark_verify_json(skill_path: str, binary: str = "skillmark") -> bool:
++    """Return True only when the Skillmark CLI reports a verified signature for this path."""
++    try:
++        proc = _skillmark_subprocess.run(
++            [binary, "verify", skill_path, "--json"], capture_output=True, text=True, timeout=120
++        )
++    except (OSError, _skillmark_subprocess.SubprocessError):
++        return False
++    if proc.returncode != 0:
++        return False
++    try:
++        return json.loads(proc.stdout).get("result") == "verified"
++    except (ValueError, AttributeError):
++        return False
++
++
++def maybe_promote_to_verified(result: Any, skill_path: str | None = None) -> Any:
++    """Promote a community scan result to the ``verified`` tier when the pluggable verifier agrees."""
++    verifier = SKILLMARK_VERIFIER or (lambda path: skillmark_verify_json(path) if path else False)
++    if result.trust_level == "community" and skill_path and verifier(skill_path):
++        result.trust_level = "verified"
++    return result
++
++
+ def should_allow_install(result: ScanResult, force: bool = False) -> tuple[bool, str]:
+     """``(allowed, reason)`` from verdict + trust; *force* overrides every block except a dangerous verdict on
+     community/trusted sources. ``allowed`` is None when policy says "ask"."""
+     decision = INSTALL_POLICY.get(result.trust_level, INSTALL_POLICY["community"])[VERDICT_INDEX.get(result.verdict, 2)]
+     n = len(result.findings)
+-    hard_block = result.verdict == "dangerous" and result.trust_level in ("community", "trusted")
++    hard_block = result.verdict == "dangerous" and result.trust_level in ("community", "trusted", "verified")
+     if decision == "allow":
+         return True, f"Allowed ({result.trust_level} source, {result.verdict} verdict)"
+     if force and not hard_block:
