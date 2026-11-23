@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { loadConfig } from "../../../packages/core/src/config.ts";
 import { createRegistryReader } from "../../../packages/core/src/verifier.ts";
+import { anchorLog } from "./tools/anchor.ts";
 import { auditInstalled, renderAudit } from "./tools/audit.ts";
 import { installSkill } from "./tools/install.ts";
 import { fetchAndVerify, type McpConfig, renderVerification } from "./tools/verify.ts";
@@ -45,6 +46,30 @@ export function createServer(config: McpConfig): McpServer {
       } catch (error) {
         return {
           content: [{ type: "text" as const, text: `✕ ${name}: ${(error as Error).message}` }],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  server.tool(
+    "anchor_log",
+    "Anchor the current Skillmark log root on Concordium testnet.",
+    {},
+    async () => {
+      try {
+        const txHash = await anchorLog();
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `✓ Log anchored — tx ${txHash}\n  https://ccdexplorer.io/testnet/transaction/${txHash}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text" as const, text: `✕ anchor: ${(error as Error).message}` }],
           isError: true,
         };
       }

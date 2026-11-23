@@ -54,6 +54,9 @@ importers:
 
   apps/mcp:
     dependencies:
+      '@concordium/web-sdk':
+        specifier: 12.0.3
+        version: 12.0.3(@protobuf-ts/runtime-rpc@2.11.1)(cbor2@1.12.0)
       '@modelcontextprotocol/sdk':
         specifier: ^1.0.0
         version: 1.32.2(zod@4.6.7)
@@ -70,9 +73,6 @@ importers:
         specifier: ^4.0.0
         version: 4.6.7
     devDependencies:
-      '@concordium/web-sdk':
-        specifier: 12.0.3
-        version: 12.0.3(@protobuf-ts/runtime-rpc@2.11.1)(cbor2@1.12.0)
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6

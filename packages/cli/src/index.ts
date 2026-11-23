@@ -4,6 +4,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { loadConfig, type NetworkConfig } from "../../core/src/config.ts";
+import { anchorVerify } from "./commands/anchorVerify.ts";
 import { keygen } from "./commands/keygen.ts";
 import { publish } from "./commands/publish.ts";
 import { registerKey } from "./commands/registerKey.ts";
@@ -37,6 +38,7 @@ Usage:
   skillmark publish <dir> --index <url> [--price <ccd>] [--pay-to <addr>]
   skillmark revoke <label>
   skillmark verify <dir|url>
+  skillmark anchor-verify <txHash> <log.jsonl>
 `;
 
 async function main(): Promise<void> {
@@ -83,6 +85,9 @@ async function main(): Promise<void> {
       break;
     case "verify":
       await verify(positionals[0], ctx);
+      break;
+    case "anchor-verify":
+      await anchorVerify(positionals[0], positionals[1], ctx);
       break;
     default:
       throw new Error(`Unknown command: ${command}`);
