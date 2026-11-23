@@ -86,7 +86,7 @@ export function ProvenanceView({ data, loading, error, fixture }: Props) {
           <Mark />
           Skillmark
         </a>
-        <a href="/docs/trust-and-boundaries.md">Limits</a>
+        <a href="/docs/hermes.md#limits">Limits</a>
       </header>
 
       <main className="sheet">
