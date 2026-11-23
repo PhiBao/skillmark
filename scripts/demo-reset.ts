@@ -201,6 +201,10 @@ async function main(): Promise<void> {
   const alice = wallet("alice");
   await publish(invoiceDir, { priceCcd: 0, payTo: null, publisher: alice.address });
 
+  const setupDir = join(repoRoot, "fixtures", "skills", "skillmark-setup");
+  await signDir(setupDir, keyPath(keysDir, "alice-k2"));
+  await publish(setupDir, { priceCcd: 0, payTo: null, publisher: alice.address });
+
   const hermesSkills = join(homedir(), ".hermes", "skills", "meeting-notes");
   const meetingFixture = join(repoRoot, "fixtures", "skills", "hermes-made", "meeting-notes");
   if (!existsSync(hermesSkills)) cpSync(meetingFixture, hermesSkills, { recursive: true });

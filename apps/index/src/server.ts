@@ -112,13 +112,23 @@ export function createApp({
     );
   });
 
+  const repoRoot = findRepoRoot(fileURLToPath(new URL(".", import.meta.url)));
+  const publicDir = join(repoRoot, "apps", "index", "public");
+  if (existsSync(publicDir)) {
+    app.use(
+      express.static(publicDir, {
+        setHeaders: (res, path) => {
+          if (path.endsWith(".md")) {
+            res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+            res.setHeader("Link", '</llms.txt>; rel="describedby"');
+          }
+        },
+      }),
+    );
+  }
+
   // Built web app (T22+). Vite output is served at the root; /s/* falls back to index.html.
-  const webDist = join(
-    findRepoRoot(fileURLToPath(new URL(".", import.meta.url))),
-    "apps",
-    "web",
-    "dist",
-  );
+  const webDist = join(repoRoot, "apps", "web", "dist");
   if (existsSync(webDist)) {
     app.use(express.static(webDist));
     app.get(/^\/s\/.+$/, (_req, res) => {
