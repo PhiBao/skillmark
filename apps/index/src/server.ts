@@ -1,16 +1,27 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 import express, { type Express } from "express";
+import { ownerOfKeyOnChain } from "../../../packages/core/src/cis8.ts";
+import { checkBadge, ownerOfKeyMcp } from "../../../packages/core/src/registryMcp.ts";
+import type { RegistryReader } from "../../../packages/core/src/verifier.ts";
 import { findBundle } from "./bundles.ts";
+import { registerPublish } from "./publish.ts";
 import { openStore, type Store } from "./store.ts";
 import { buildWellKnownIndex } from "./wellKnown.ts";
 
 export interface AppOptions {
   store: Store;
   dataDir: string;
+  registryReader?: RegistryReader;
+  rateLimitPerHour?: number;
 }
 
-export function createApp({ store, dataDir }: AppOptions): Express {
+export function createApp({
+  store,
+  dataDir,
+  registryReader,
+  rateLimitPerHour,
+}: AppOptions): Express {
   const app = express();
   app.disable("x-powered-by");
 
@@ -51,6 +62,10 @@ export function createApp({ store, dataDir }: AppOptions): Express {
     res.type("application/json").send(listing.sig);
   });
 
+  if (registryReader) {
+    registerPublish(app, { store, dataDir, registryReader, rateLimitPerHour });
+  }
+
   app.get("/api/skills", (_req, res) => {
     res.json(
       store.listListings().map((row) => ({
@@ -72,6 +87,12 @@ export function createApp({ store, dataDir }: AppOptions): Express {
 if (process.argv[1]?.endsWith("server.ts") || process.argv[1]?.endsWith("server.js")) {
   const port = Number(process.env.PORT ?? 8080);
   const dataDir = process.env.DATA_DIR ?? join(homedir(), ".skillmark", "index");
-  const app = createApp({ store: openStore(dataDir), dataDir });
+  const registryReader: RegistryReader = {
+    ownerOfKeyOnChain: (key) => ownerOfKeyOnChain(key),
+    ownerOfKeyMcp: async (key) =>
+      (await ownerOfKeyMcp(key)) as { owner?: string; status?: string } | null,
+    checkBadge: (owner) => checkBadge(owner),
+  };
+  const app = createApp({ store: openStore(dataDir), dataDir, registryReader });
   app.listen(port, () => console.log(`Skillmark index listening on :${port}`));
 }
