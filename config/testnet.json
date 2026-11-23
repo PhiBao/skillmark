@@ -1,0 +1,10 @@
+{
+  "network": "testnet",
+  "grpcHost": "grpc.testnet.concordium.com",
+  "grpcPort": 20000,
+  "caip2": "ccd:4221332d34e1694168c2a0c0b3fd0f27",
+  "genesisHash": "4221332d34e1694168c2a0c0b3fd0f273809612cb13d000d5c2e00e85f50f796",
+  "cis8": { "index": 12801, "subindex": 0 },
+  "cis8004": { "index": 12802, "subindex": 0 },
+  "registryMcpUrl": "https://agent-registry-mcp.concordium.com/mcp"
+}

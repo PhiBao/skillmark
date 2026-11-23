@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.*
+!.env.example
+data/
+**/dist
+*.tsbuildinfo
+
+# Secrets live outside the repo under ~/.skillmark, never commit exports or keys
+.skillmark/
+*.export
+keys/
+
+# OS / editor
+.DS_Store
+*.log
