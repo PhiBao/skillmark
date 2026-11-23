@@ -29,13 +29,14 @@ import { buildManifest } from "../../../packages/core/src/manifest.ts";
 import {
   buildCis8CanonicalBytes,
   buildRegisterTx,
+  buildRevokeTx,
 } from "../../../packages/core/src/registryMcp.ts";
 import { buildStatement, signStatement } from "../../../packages/core/src/signature.ts";
 import { SIGNATURE_FILE } from "../../../packages/core/src/types.ts";
 import type { RegistryReader } from "../../../packages/core/src/verifier.ts";
 import { createApp } from "../../index/src/server.ts";
 import { openStore } from "../../index/src/store.ts";
-import { hermesUninstall } from "../src/hermes.ts";
+import { hermesList, hermesUninstall } from "../src/hermes.ts";
 
 const dirs: string[] = [];
 let client: Client | undefined;
@@ -130,11 +131,61 @@ async function registerTestKey(key: ReturnType<typeof generateKey>): Promise<voi
   );
 }
 
+async function revokeTestKey(key: ReturnType<typeof generateKey>): Promise<void> {
+  const config = loadConfig();
+  const build = await buildRevokeTx(
+    {
+      identifier: {
+        namespace: SKILLMARK_NAMESPACE,
+        key_type: KEY_TYPE,
+        public_key_hex: key.public_key_hex,
+      },
+      sender: OWNER,
+    },
+    { config },
+  );
+  const walletExport = parseWallet(
+    readFileSync(join(homedir(), ".skillmark", "wallets", "alice.export"), "utf8"),
+  );
+  const sender = AccountAddress.fromBase58(OWNER);
+  const tx = Transaction.updateContract(
+    {
+      amount: CcdAmount.fromMicroCcd(0n),
+      address: ContractAddress.create(
+        build.contract_address.index,
+        build.contract_address.subindex,
+      ),
+      receiveName: ReceiveName.fromString(build.receive_name),
+      message: Parameter.fromHexString(build.parameter_hex),
+    },
+    Energy.create(build.suggested_energy),
+  )
+    .addMetadata({
+      sender,
+      nonce: SequenceNumber.create(await nextNonce(sender, config)),
+      expiry: TransactionExpiry.futureMinutes(10),
+    })
+    .build();
+  await sendAndFinalize(
+    tx,
+    {
+      address: sender,
+      signer: buildBasicAccountSigner(walletExport.value.accountKeys.keys[0].keys[0].signKey),
+    },
+    config,
+  );
+}
+
 async function makeListing(
   dataDir: string,
   name: string,
   tampered: boolean,
-): Promise<{ manifestHash: string; bundleSha256: string; sig: string }> {
+): Promise<{
+  manifestHash: string;
+  bundleSha256: string;
+  sig: string;
+  key: ReturnType<typeof generateKey>;
+}> {
   const skill = mkdtempSync(join(tmpdir(), "skillmark-e2e-skill-"));
   dirs.push(skill);
   writeFileSync(
@@ -159,7 +210,7 @@ async function makeListing(
   const bundleSha256 = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
   mkdirSync(join(dataDir, "bundles"), { recursive: true });
   writeFileSync(join(dataDir, "bundles", `${bundleSha256.slice(7)}.tgz`), bytes);
-  return { manifestHash, bundleSha256, sig: JSON.stringify(sig) };
+  return { manifestHash, bundleSha256, sig: JSON.stringify(sig), key };
 }
 
 describe("MCP e2e with local Hermes", () => {
@@ -247,5 +298,14 @@ describe("MCP e2e with local Hermes", () => {
     const blockedText = String((blocked.content as Array<{ text: string }>)[0].text);
     expect(blockedText).toContain("TAMPERED");
     expect(blockedText).toContain("Not installed");
-  }, 180_000);
+
+    // Revoke the signing key used for the install, then audit: the skill must be quarantined.
+    await revokeTestKey(good.key);
+    const audited = await client.callTool({ name: "audit_installed", arguments: {} });
+    const auditText = String((audited.content as Array<{ text: string }>)[0].text);
+    expect(auditText).toContain("QUARANTINED");
+    expect(auditText).toContain("invoice-parser");
+    const list = await hermesList();
+    expect(list.stdout).not.toContain("invoice-parser");
+  }, 240_000);
 });

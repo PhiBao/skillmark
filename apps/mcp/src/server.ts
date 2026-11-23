@@ -1,6 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { loadConfig } from "../../../packages/core/src/config.ts";
+import { createRegistryReader } from "../../../packages/core/src/verifier.ts";
+import { auditInstalled, renderAudit } from "./tools/audit.ts";
 import { installSkill } from "./tools/install.ts";
 import { fetchAndVerify, type McpConfig, renderVerification } from "./tools/verify.ts";
 
@@ -42,6 +45,23 @@ export function createServer(config: McpConfig): McpServer {
       } catch (error) {
         return {
           content: [{ type: "text" as const, text: `✕ ${name}: ${(error as Error).message}` }],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  server.tool(
+    "audit_installed",
+    "Re-verify installed skills and quarantine any that are no longer verified.",
+    {},
+    async () => {
+      try {
+        const report = await auditInstalled({ reader: createRegistryReader(loadConfig()) }, config);
+        return { content: [{ type: "text" as const, text: renderAudit(report) }] };
+      } catch (error) {
+        return {
+          content: [{ type: "text" as const, text: `✕ audit: ${(error as Error).message}` }],
           isError: true,
         };
       }
