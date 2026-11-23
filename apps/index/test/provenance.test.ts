@@ -1,0 +1,124 @@
+import { createHash } from "node:crypto";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
+import type { RegistryReader } from "../../../packages/core/src/verifier.ts";
+import { clearProvenanceCache, provenance } from "../src/provenance.ts";
+import { type ListingRow, openStore, type Store } from "../src/store.ts";
+
+const dirs: string[] = [];
+afterEach(() => {
+  clearProvenanceCache();
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+});
+
+const OWNER = "45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q";
+const key = { namespace: "skillmark:v1", key_type: "ed25519", public_key_hex: "ab".repeat(32) };
+
+function setup(): Store {
+  const dataDir = mkdtempSync(join(tmpdir(), "skillmark-prov-"));
+  dirs.push(dataDir);
+  const store = openStore(dataDir);
+  const sig = { statement: { key } };
+  const row: ListingRow = {
+    name: "invoice-parser",
+    version: "1.0.0",
+    description: "Parse invoices.",
+    manifestHash: `sha256:${"cd".repeat(32)}`,
+    sig: JSON.stringify(sig),
+    bundleSha256: `sha256:${"ef".repeat(32)}`,
+    sizeBytes: 1234,
+    price: null,
+    payTo: null,
+    publisherAccount: OWNER,
+    status: "verified",
+    publishedAt: new Date().toISOString(),
+  };
+  store.insertListing(row);
+  return store;
+}
+
+const active: RegistryReader = {
+  ownerOfKeyOnChain: async () => ({
+    found: true,
+    ownerAccount: OWNER,
+    status: "Active",
+    lastUpdated: "2026-11-23T07:00:00.000Z",
+  }),
+  ownerOfKeyMcp: async () => ({ owner: OWNER, status: "Active" }),
+  checkBadge: async () => ({ agents: [{ token_address: "JyP9X5PpNatg3zfjCcn3S" }] }),
+};
+
+describe("provenance API", () => {
+  it("returns all ledger lines for a verified skill", async () => {
+    const store = setup();
+    const result = await provenance("invoice-parser", "1.0.0", { store, reader: active });
+    expect(result?.status).toBe("verified");
+    expect(result?.lines.map((line) => line.label)).toEqual([
+      "Contents",
+      "Signed by key",
+      "Key owner",
+      "Key status",
+      "Agent badge",
+      "Paid installs",
+    ]);
+    expect(result?.lines[3].value).toContain("Active");
+    expect(result?.lines[4].value).toBe("JyP9X5PpNatg3zfjCcn3S");
+  });
+
+  it("shows revoked without a verified state", async () => {
+    const store = setup();
+    const revoked: RegistryReader = {
+      ...active,
+      ownerOfKeyOnChain: async () => ({ found: true, ownerAccount: OWNER, status: "Revoked" }),
+      ownerOfKeyMcp: async () => ({ owner: OWNER, status: "Revoked" }),
+    };
+    const result = await provenance("invoice-parser", "1.0.0", { store, reader: revoked });
+    expect(result?.status).toBe("revoked");
+    expect(result?.lines.find((line) => line.label === "Key status")?.check).toBe("fail");
+  });
+
+  it("shows unreachable and never verified when the chain fails", async () => {
+    const store = setup();
+    const broken: RegistryReader = {
+      ...active,
+      ownerOfKeyOnChain: async () => {
+        throw new Error("connection refused");
+      },
+    };
+    const result = await provenance("invoice-parser", "1.0.0", { store, reader: broken });
+    expect(result?.status).toBe("unreachable");
+    expect(result?.lines.find((line) => line.label === "Key owner")?.value).toContain(
+      "Couldn't reach testnet",
+    );
+  });
+
+  it("fails closed on an MCP disagreement", async () => {
+    const store = setup();
+    const mismatch: RegistryReader = {
+      ...active,
+      ownerOfKeyMcp: async () => ({ owner: OWNER, status: "Revoked" }),
+    };
+    expect((await provenance("invoice-parser", "1.0.0", { store, reader: mismatch }))?.status).toBe(
+      "registry-mismatch",
+    );
+  });
+
+  it("serves a 30-second cache and then refreshes", async () => {
+    const store = setup();
+    let now = 1_000_000;
+    const deps = { store, reader: active, now: () => now };
+    const first = await provenance("invoice-parser", "1.0.0", deps);
+    const second = await provenance("invoice-parser", "1.0.0", deps);
+    expect(first?.cached).toBe(false);
+    expect(second?.cached).toBe(true);
+    now += 31_000;
+    const refreshed = await provenance("invoice-parser", "1.0.0", deps);
+    expect(refreshed?.cached).toBe(false);
+  });
+
+  it("returns undefined for an unknown listing", async () => {
+    expect(await provenance("nope", "1.0.0", { store: setup(), reader: active })).toBeUndefined();
+  });
+});

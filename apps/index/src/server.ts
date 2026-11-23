@@ -10,6 +10,7 @@ import { mountAgentCard } from "./agentCard.ts";
 import { findBundle } from "./bundles.ts";
 import { createFacilitator, mountFacilitator } from "./facilitator.ts";
 import { mountPaidBundles } from "./payments.ts";
+import { provenance } from "./provenance.ts";
 import { registerPublish } from "./publish.ts";
 import { openStore, type Store } from "./store.ts";
 import { buildWellKnownIndex } from "./wellKnown.ts";
@@ -78,6 +79,20 @@ export function createApp({
 
   if (registryReader) {
     registerPublish(app, { store, dataDir, registryReader, rateLimitPerHour });
+  }
+
+  if (registryReader) {
+    app.get("/api/provenance/:name/:version", async (req, res) => {
+      const result = await provenance(String(req.params.name), String(req.params.version), {
+        store,
+        reader: registryReader,
+      });
+      if (!result) {
+        res.status(404).json({ error: "not found" });
+        return;
+      }
+      res.json(result);
+    });
   }
 
   app.get("/api/skills", (_req, res) => {
