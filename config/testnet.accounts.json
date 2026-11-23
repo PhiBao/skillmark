@@ -2,5 +2,8 @@
   "alice": "PLACEHOLDER_ALICE_ADDRESS",
   "hermes": "PLACEHOLDER_HERMES_ADDRESS",
   "hermes-b": "PLACEHOLDER_HERMES_B_ADDRESS",
-  "sponsor": "PLACEHOLDER_SPONSOR_ADDRESS"
+  "sponsor": "PLACEHOLDER_SPONSOR_ADDRESS",
+  "hermesAgentTokenId": "1449",
+  "hermesBadge": "JyP9X5PpNatg3zfjCcn3S",
+  "hermesAgentTx": "9d3e36afbb6a388e25b008f8c381acc78469aa6bb38a1546180fa1dcba8b10f2"
 }
