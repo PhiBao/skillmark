@@ -6,6 +6,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:testnet": "RUN_TESTNET=1 vitest run test/testnet.test.ts",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
