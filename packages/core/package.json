@@ -1,0 +1,20 @@
+{
+  "name": "core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@concordium/web-sdk": "12.0.3",
+    "@noble/curves": "^2.0.0",
+    "canonicalize": "^5.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}
