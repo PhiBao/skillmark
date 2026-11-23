@@ -6,6 +6,8 @@ import { ownerOfKeyOnChain } from "../../../packages/core/src/cis8.ts";
 import { checkBadge, ownerOfKeyMcp } from "../../../packages/core/src/registryMcp.ts";
 import type { RegistryReader } from "../../../packages/core/src/verifier.ts";
 import { findBundle } from "./bundles.ts";
+import { createFacilitator, mountFacilitator } from "./facilitator.ts";
+import { mountPaidBundles } from "./payments.ts";
 import { registerPublish } from "./publish.ts";
 import { openStore, type Store } from "./store.ts";
 import { buildWellKnownIndex } from "./wellKnown.ts";
@@ -15,6 +17,8 @@ export interface AppOptions {
   dataDir: string;
   registryReader?: RegistryReader;
   rateLimitPerHour?: number;
+  facilitatorUrl?: string;
+  facilitator?: ReturnType<typeof createFacilitator>;
 }
 
 export function createApp({
@@ -22,9 +26,15 @@ export function createApp({
   dataDir,
   registryReader,
   rateLimitPerHour,
+  facilitatorUrl,
+  facilitator,
 }: AppOptions): Express {
   const app = express();
   app.disable("x-powered-by");
+  app.use(express.json({ limit: "1mb" }));
+
+  if (facilitator) mountFacilitator(app, facilitator);
+  if (facilitatorUrl) mountPaidBundles(app, { store, dataDir, facilitatorUrl });
 
   app.get("/healthz", (_req, res) => {
     res.json({ ok: true });
@@ -95,7 +105,21 @@ if (process.argv[1]?.endsWith("server.ts") || process.argv[1]?.endsWith("server.
     checkBadge: (owner) => checkBadge(owner),
   };
   const store = openStore(dataDir);
-  const app = createApp({ store, dataDir, registryReader });
+  const sponsorWalletJson = process.env.SPONSOR_WALLET_JSON;
+  const sponsorWalletFile =
+    process.env.SPONSOR_WALLET_FILE ?? join(homedir(), ".skillmark", "wallets", "sponsor.export");
+  const facilitator = createFacilitator({
+    store,
+    sponsorWalletJson,
+    sponsorWalletFile: sponsorWalletJson ? undefined : sponsorWalletFile,
+  });
+  const app = createApp({
+    store,
+    dataDir,
+    registryReader,
+    facilitator,
+    facilitatorUrl: `http://127.0.0.1:${port}/facilitator`,
+  });
   const { seedIndex } = await import("../../../scripts/seed-index.ts");
   const { findRepoRoot } = await import("../../../packages/core/src/config.ts");
   await seedIndex(store, findRepoRoot(fileURLToPath(new URL(".", import.meta.url))), dataDir);

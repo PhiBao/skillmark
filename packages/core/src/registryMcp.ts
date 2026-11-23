@@ -126,6 +126,13 @@ export function ownerOfKeyMcp(key: ExternalKey, options?: RegistryCallOptions): 
   return registryCall("owner_of_key", { external_key: key }, options);
 }
 
+export function agentsByOwner(
+  ownerAccount: string,
+  options?: RegistryCallOptions,
+): Promise<{ count?: number; agents?: unknown[] }> {
+  return registryCall("agents_by_owner", { owner_account: ownerAccount }, options);
+}
+
 export function contractInfo(options?: RegistryCallOptions): Promise<unknown> {
   return registryCall("contract_info", {}, options);
 }
