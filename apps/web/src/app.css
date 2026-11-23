@@ -227,7 +227,14 @@ summary:focus-visible {
   color: var(--caution);
 }
 
+.ledger-check svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
 .ledger-detail {
+  display: block;
   color: var(--muted);
   font-size: var(--t13);
   margin-top: var(--s1);
