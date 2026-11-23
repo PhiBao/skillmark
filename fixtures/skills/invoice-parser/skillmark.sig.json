@@ -2,7 +2,7 @@
   "schema": "skillmark/sig/v1",
   "statement": {
     "schema": "skillmark/statement/v1",
-    "manifestHash": "sha256:cf07bf4b1f53c04f695e1e2cf9fcd65a1b9886dac6dcd4bf7b192298dfb45d91",
+    "manifestHash": "sha256:56c6a4638c068bd476f833ed7233a5850e6fc08e9e99227731a8caecfa9c8b70",
     "name": "invoice-parser",
     "version": "1.0.0",
     "network": "ccd:4221332d34e1694168c2a0c0b3fd0f27",
@@ -13,9 +13,9 @@
     "key": {
       "namespace": "skillmark:v1",
       "key_type": "ed25519",
-      "public_key_hex": "4a65d905b10ccb6230246db3ff278ac9e86c3f887e7134cfd112e11e0954b632"
+      "public_key_hex": "000a92b0885ff3941aebf2e2b19309c040d463de10f9a62c5bc2f2b13903f8e4"
     },
-    "issuedAt": "2026-11-23T08:41:33.221Z"
+    "issuedAt": "2026-11-23T09:31:38.253Z"
   },
-  "signature_hex": "a0d3245c7811549cd56f1e3885ad89db83e9fd0d8d8aa278e3bd2f9d18352b03eacfbc29dcfdc1573bb0365749787a096b3069796180ecd90f9aa67dd59e5c0f"
+  "signature_hex": "855464be275632a1cf470d06a0333dfdca4f9cd0003c607b8f751b59f6c286b11f8ae919c48d7dbd33402c5ea9b22ba21349daf562123b56a150c95e1fdf8c0c"
 }
