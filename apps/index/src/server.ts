@@ -3,8 +3,10 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import express, { type Express } from "express";
 import { ownerOfKeyOnChain } from "../../../packages/core/src/cis8.ts";
+import { findRepoRoot } from "../../../packages/core/src/config.ts";
 import { checkBadge, ownerOfKeyMcp } from "../../../packages/core/src/registryMcp.ts";
 import type { RegistryReader } from "../../../packages/core/src/verifier.ts";
+import { mountAgentCard } from "./agentCard.ts";
 import { findBundle } from "./bundles.ts";
 import { createFacilitator, mountFacilitator } from "./facilitator.ts";
 import { mountPaidBundles } from "./payments.ts";
@@ -32,6 +34,7 @@ export function createApp({
   const app = express();
   app.disable("x-powered-by");
   app.use(express.json({ limit: "1mb" }));
+  mountAgentCard(app, findRepoRoot(fileURLToPath(new URL(".", import.meta.url))));
 
   if (facilitator) mountFacilitator(app, facilitator);
   if (facilitatorUrl) mountPaidBundles(app, { store, dataDir, facilitatorUrl });
@@ -121,7 +124,6 @@ if (process.argv[1]?.endsWith("server.ts") || process.argv[1]?.endsWith("server.
     facilitatorUrl: `http://127.0.0.1:${port}/facilitator`,
   });
   const { seedIndex } = await import("../../../scripts/seed-index.ts");
-  const { findRepoRoot } = await import("../../../packages/core/src/config.ts");
   await seedIndex(store, findRepoRoot(fileURLToPath(new URL(".", import.meta.url))), dataDir);
   app.listen(port, () => console.log(`Skillmark index listening on :${port}`));
 }

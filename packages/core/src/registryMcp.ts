@@ -133,6 +133,38 @@ export function agentsByOwner(
   return registryCall("agents_by_owner", { owner_account: ownerAccount }, options);
 }
 
+export function buildAgentCard(
+  args: Record<string, unknown>,
+  options?: RegistryCallOptions,
+): Promise<any> {
+  return registryCall("build_agent_card", args, options);
+}
+
+export function buildRegister(
+  args: Record<string, unknown>,
+  options?: RegistryCallOptions,
+): Promise<RegisterBuild> {
+  return registryCall<RegisterBuild>("build_register", args, options);
+}
+
+export function buildSetAgentUri(
+  args: Record<string, unknown>,
+  options?: RegistryCallOptions,
+): Promise<RegisterBuild> {
+  return registryCall<RegisterBuild>("build_set_agent_uri", args, options);
+}
+
+export function agentByExternalReference(
+  externalReference: unknown,
+  options?: RegistryCallOptions,
+): Promise<any> {
+  return registryCall(
+    "agent_by_external_reference",
+    { external_reference: externalReference },
+    options,
+  );
+}
+
 export function contractInfo(options?: RegistryCallOptions): Promise<unknown> {
   return registryCall("contract_info", {}, options);
 }
