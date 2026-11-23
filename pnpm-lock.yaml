@@ -7,6 +7,13 @@ settings:
 importers:
 
   .:
+    dependencies:
+      tar:
+        specifier: ^7.0.0
+        version: 7.5.23
+      tsx:
+        specifier: ^4.0.0
+        version: 4.23.15
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.0.0
@@ -17,9 +24,6 @@ importers:
       cli:
         specifier: workspace:*
         version: link:packages/cli
-      tsx:
-        specifier: ^4.0.0
-        version: 4.23.15
       typescript:
         specifier: ^5.0.0
         version: 5.9.3

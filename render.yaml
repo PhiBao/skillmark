@@ -1,0 +1,20 @@
+# Render free web service for the Skillmark index + web app.
+# Secrets (e.g. SPONSOR_WALLET_JSON) are set in the Render dashboard, never here.
+services:
+  - type: web
+    name: skillmark-index
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    autoDeployTrigger: commit
+    healthCheckPath: /healthz
+    buildCommand: pnpm i --frozen-lockfile
+    startCommand: node --import tsx apps/index/src/server.ts
+    envVars:
+      - key: DATA_DIR
+        value: /opt/render/project/src/data
+      - key: INDEX_PUBLIC_URL
+        value: https://skillmark-index.onrender.com
+      - key: NODE_VERSION
+        value: 22.14.0

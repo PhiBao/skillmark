@@ -1,5 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import express, { type Express } from "express";
 import { ownerOfKeyOnChain } from "../../../packages/core/src/cis8.ts";
 import { checkBadge, ownerOfKeyMcp } from "../../../packages/core/src/registryMcp.ts";
@@ -93,6 +94,10 @@ if (process.argv[1]?.endsWith("server.ts") || process.argv[1]?.endsWith("server.
       (await ownerOfKeyMcp(key)) as { owner?: string; status?: string } | null,
     checkBadge: (owner) => checkBadge(owner),
   };
-  const app = createApp({ store: openStore(dataDir), dataDir, registryReader });
+  const store = openStore(dataDir);
+  const app = createApp({ store, dataDir, registryReader });
+  const { seedIndex } = await import("../../../scripts/seed-index.ts");
+  const { findRepoRoot } = await import("../../../packages/core/src/config.ts");
+  await seedIndex(store, findRepoRoot(fileURLToPath(new URL(".", import.meta.url))), dataDir);
   app.listen(port, () => console.log(`Skillmark index listening on :${port}`));
 }

@@ -6,7 +6,7 @@
   "scripts": {
     "test": "vitest run",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js"
+    "start": "node --import tsx src/server.ts"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.0",
