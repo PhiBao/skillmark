@@ -334,3 +334,138 @@ summary:focus-visible {
     transform: none;
   }
 }
+
+/* --- Home (S2) ----------------------------------------------------------- */
+
+.hero {
+  padding: var(--s12) 0 var(--s8);
+  border-bottom: 1px solid var(--rule);
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: var(--t28);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0;
+  max-width: 26ch;
+}
+
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: var(--t40);
+  }
+}
+
+.hero-facts {
+  margin-top: var(--s6);
+  color: var(--muted);
+  font-size: var(--t16);
+  max-width: 54ch;
+}
+
+.hero-facts p {
+  margin: 0 0 var(--s1);
+}
+
+.marks,
+.authors {
+  padding: var(--s8) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.marks h2,
+.authors h2 {
+  font-size: var(--t14);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 var(--s4);
+}
+
+.mark-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mark-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--s1) var(--s3);
+  align-items: baseline;
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+@media (min-width: 768px) {
+  .mark-row {
+    grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+  }
+}
+
+.mark-name {
+  font-family: var(--font-display);
+  font-size: var(--t20);
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.mark-name:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mark-version,
+.mark-publisher,
+.mark-price {
+  font-family: var(--font-mono);
+  font-size: var(--t13);
+  color: var(--muted);
+}
+
+.mark-price {
+  color: var(--ink);
+}
+
+.author-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.author-steps li {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: var(--s3);
+  padding: var(--s4) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.author-steps li:last-child {
+  border-bottom: none;
+}
+
+.step-number {
+  font-family: var(--font-mono);
+  font-size: var(--t14);
+  color: var(--muted);
+  border: 1px solid var(--rule);
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.author-steps p {
+  margin: 0 0 var(--s2);
+  color: var(--muted);
+  font-size: var(--t14);
+}
+
+.author-steps .code {
+  margin-top: var(--s1);
+}

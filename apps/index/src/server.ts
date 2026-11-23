@@ -105,6 +105,7 @@ export function createApp({
         manifestHash: row.manifestHash,
         price: row.price ? JSON.parse(row.price) : null,
         payTo: row.payTo,
+        publisherAccount: row.publisherAccount,
         status: row.status,
         publishedAt: row.publishedAt,
       })),
