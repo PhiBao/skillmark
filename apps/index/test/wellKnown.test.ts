@@ -20,13 +20,14 @@ function setup() {
 }
 
 async function listen(app: ReturnType<typeof createApp>): Promise<string> {
-  server = app.listen(0, "127.0.0.1");
-  await new Promise<void>((resolve) => server?.once("listening", resolve));
-  return `http://127.0.0.1:${(server?.address() as AddressInfo).port}`;
+  const listener = app.listen(0, "127.0.0.1");
+  server = listener;
+  await new Promise<void>((resolve) => listener.once("listening", resolve));
+  return `http://127.0.0.1:${(listener.address() as AddressInfo).port}`;
 }
 
 afterEach(() => {
-  server?.close();
+  if (server) server.close();
   server = undefined;
   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });

@@ -2,8 +2,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { hashManifest } from "./canonical.js";
 import type { ExternalKey } from "./cis8.js";
+import { ownerOfKeyOnChain } from "./cis8.js";
 import { loadConfig, type NetworkConfig } from "./config.js";
 import { buildManifest } from "./manifest.js";
+import { checkBadge, ownerOfKeyMcp } from "./registryMcp.js";
 import { verifyStatement } from "./signature.js";
 import { SIGNATURE_FILE, type SignatureFile } from "./types.js";
 
@@ -78,6 +80,16 @@ function normaliseStatus(status: string | null | undefined): string | null {
   if (lower === "active") return "Active";
   if (lower === "revoked") return "Revoked";
   return lower;
+}
+
+/** Production reader: direct chain read cross-checked with Registry MCP. */
+export function createRegistryReader(config: NetworkConfig = loadConfig()): RegistryReader {
+  return {
+    ownerOfKeyOnChain: (key) => ownerOfKeyOnChain(key, config),
+    ownerOfKeyMcp: async (key) =>
+      (await ownerOfKeyMcp(key, { config })) as { owner?: string; status?: string } | null,
+    checkBadge: (owner) => checkBadge(owner, { config }),
+  };
 }
 
 function badgesFrom(value: unknown): string[] {
