@@ -1,10 +1,10 @@
-#!/usr/bin/env -S node --experimental-strip-types
 /** Skillmark publisher CLI. Uses only node:util parseArgs — no CLI framework. */
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { loadConfig, type NetworkConfig } from "../../core/src/config.ts";
 import { anchorVerify } from "./commands/anchorVerify.ts";
+import { init } from "./commands/init.ts";
 import { keygen } from "./commands/keygen.ts";
 import { publish } from "./commands/publish.ts";
 import { registerKey } from "./commands/registerKey.ts";
@@ -29,6 +29,9 @@ export function makeCtx(): Ctx {
   };
 }
 
+declare const __SKILLMARK_VERSION__: string | undefined;
+const VERSION = typeof __SKILLMARK_VERSION__ === "string" ? __SKILLMARK_VERSION__ : "0.1.0";
+
 const HELP = `Skillmark CLI
 
 Usage:
@@ -39,12 +42,17 @@ Usage:
   skillmark revoke <label>
   skillmark verify <dir|url>
   skillmark anchor-verify <txHash> <log.jsonl>
+  skillmark init [--index <url>] [--dry-run] [--write-hermes-config]
 `;
 
 async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   if (!command || command === "--help" || command === "-h") {
     console.log(HELP);
+    return;
+  }
+  if (command === "--version" || command === "-v") {
+    console.log(VERSION);
     return;
   }
   const { values, positionals } = parseArgs({
@@ -54,6 +62,8 @@ async function main(): Promise<void> {
       index: { type: "string" },
       price: { type: "string" },
       "pay-to": { type: "string" },
+      "dry-run": { type: "boolean", default: false },
+      "write-hermes-config": { type: "boolean", default: false },
       json: { type: "boolean", default: false },
     },
     allowPositionals: true,
@@ -88,6 +98,13 @@ async function main(): Promise<void> {
       break;
     case "anchor-verify":
       await anchorVerify(positionals[0], positionals[1], ctx);
+      break;
+    case "init":
+      await init({
+        indexUrl: values.index,
+        dryRun: values["dry-run"] === true,
+        writeHermesConfig: values["write-hermes-config"] === true,
+      });
       break;
     default:
       throw new Error(`Unknown command: ${command}`);

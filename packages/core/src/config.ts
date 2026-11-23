@@ -61,10 +61,26 @@ export function findRepoRoot(start = dirname(fileURLToPath(import.meta.url))): s
   }
 }
 
-/** Read the committed testnet config from disk. */
+/** Embedded copy so the published CLI/MCP package works outside the monorepo. */
+export const DEFAULT_TESTNET_CONFIG = {
+  network: "testnet",
+  grpcHost: "grpc.testnet.concordium.com",
+  grpcPort: 20000,
+  caip2: TESTNET_CAIP2,
+  genesisHash: "4221332d34e1694168c2a0c0b3fd0f273809612cb13d000d5c2e00e85f50f796",
+  cis8: { index: 12801, subindex: 0 },
+  cis8004: { index: 12802, subindex: 0 },
+  registryMcpUrl: "https://agent-registry-mcp.concordium.com/mcp",
+};
+
+/** Read the committed testnet config from disk, or fall back to the embedded testnet config. */
 export function readBundledConfig(): unknown {
-  const file = join(findRepoRoot(), "config", "testnet.json");
-  return JSON.parse(readFileSync(file, "utf8")) as unknown;
+  try {
+    const file = join(findRepoRoot(), "config", "testnet.json");
+    return JSON.parse(readFileSync(file, "utf8")) as unknown;
+  } catch {
+    return JSON.parse(JSON.stringify(DEFAULT_TESTNET_CONFIG)) as unknown;
+  }
 }
 
 function parseContractEnv(value: string, label: string): { index: number; subindex: number } {

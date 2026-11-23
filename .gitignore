@@ -4,6 +4,10 @@ node_modules/
 !.env.example
 data/
 **/dist
+# The distributable package source lives in packages/dist (built bins are ignored)
+!packages/dist/
+packages/dist/bin/
+packages/dist/*.tgz
 *.tsbuildinfo
 
 # Secrets live outside the repo under ~/.skillmark, never commit exports or keys
