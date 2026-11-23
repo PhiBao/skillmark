@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-labelledby="ir-title ir-desc">
+  <title id="ir-title">Publish, install, revoke, quarantine</title>
+  <desc id="ir-desc">The index serves a bundle to the MCP. The verifier reads CIS-8 on chain and cross-checks the Registry MCP, then the MCP installs through the Hermes CLI so the scanner runs. A revoke transaction reaches the chain; the audit re-reads the chain, uninstalls through Hermes and moves the skill to quarantine.</desc>
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5B5E57"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#A12F28"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#2D5A43"/>
+    </marker>
+    <style>
+      .box { fill: #FBFAF7; stroke: #D6D3CB; stroke-width: 1.2; }
+      .title { font: 600 13px "IBM Plex Sans", system-ui, sans-serif; fill: #1E1F1C; }
+      .sub { font: 400 11px "IBM Plex Mono", ui-monospace, monospace; fill: #5B5E57; }
+      .label { font: 400 11px "IBM Plex Sans", system-ui, sans-serif; fill: #34456A; }
+      .danger { font: 400 11px "IBM Plex Sans", system-ui, sans-serif; fill: #A12F28; }
+      .safe { font: 400 11px "IBM Plex Sans", system-ui, sans-serif; fill: #2D5A43; }
+      .line { stroke: #5B5E57; stroke-width: 1.2; fill: none; }
+      .redline { stroke: #A12F28; stroke-width: 1.4; fill: none; }
+      .greenline { stroke: #2D5A43; stroke-width: 1.2; fill: none; }
+    </style>
+  </defs>
+
+  <rect width="720" height="400" fill="#F4F2EE"/>
+
+  <g>
+    <rect class="box" x="20" y="26" width="140" height="56" rx="2"/>
+    <text class="title" x="34" y="49">Index</text>
+    <text class="sub" x="34" y="68">bundle + sig</text>
+  </g>
+  <g>
+    <rect class="box" x="200" y="26" width="150" height="56" rx="2"/>
+    <text class="title" x="214" y="49">Skillmark MCP</text>
+    <text class="sub" x="214" y="68">Hermes host</text>
+  </g>
+  <g>
+    <rect class="box" x="390" y="26" width="150" height="56" rx="2"/>
+    <text class="title" x="404" y="49">Verifier</text>
+    <text class="sub" x="404" y="68">10-row table</text>
+  </g>
+  <g>
+    <rect class="box" x="580" y="26" width="120" height="56" rx="2"/>
+    <text class="title" x="594" y="49">CIS-8</text>
+    <text class="sub" x="594" y="68">ownerOfKey</text>
+  </g>
+
+  <g>
+    <rect class="box" x="200" y="146" width="150" height="56" rx="2"/>
+    <text class="title" x="214" y="169">Hermes CLI</text>
+    <text class="sub" x="214" y="188">scanner runs</text>
+  </g>
+  <g>
+    <rect class="box" x="390" y="146" width="150" height="56" rx="2"/>
+    <text class="title" x="404" y="169">Installed skill</text>
+    <text class="sub" x="404" y="188">in Hermes skills</text>
+  </g>
+  <g>
+    <rect class="box" x="20" y="286" width="150" height="56" rx="2"/>
+    <text class="title" x="34" y="309">Revoke tx</text>
+    <text class="sub" x="34" y="328">publisher key</text>
+  </g>
+  <g>
+    <rect class="box" x="260" y="286" width="150" height="56" rx="2"/>
+    <text class="title" x="274" y="309">Audit</text>
+    <text class="sub" x="274" y="328">re-verify all</text>
+  </g>
+  <g>
+    <rect class="box" x="480" y="286" width="170" height="56" rx="2"/>
+    <text class="title" x="494" y="309">Quarantine</text>
+    <text class="sub" x="494" y="328">kept, not deleted</text>
+  </g>
+
+  <path class="line" d="M160 54 L200 54" marker-end="url(#arrow2)"/>
+  <path class="line" d="M350 54 L390 54" marker-end="url(#arrow2)"/>
+  <text class="label" x="354" y="46">verify</text>
+  <path class="line" d="M540 54 L580 54" marker-end="url(#arrow2)"/>
+  <path class="line" d="M580 74 L540 74" marker-end="url(#arrow2)"/>
+  <text class="label" x="544" y="92">cross-check</text>
+
+  <path class="line" d="M465 82 L465 106 L280 106 L280 146" marker-end="url(#arrow2)"/>
+  <text class="label" x="300" y="122">verified only</text>
+
+  <path class="line" d="M350 174 L390 174" marker-end="url(#arrow2)"/>
+  <text class="label" x="352" y="166">install</text>
+
+  <path class="redline" d="M95 286 L95 240 L640 240 L640 82" marker-end="url(#arrow-red)"/>
+  <text class="danger" x="104" y="260">one revoke tx</text>
+
+  <path class="greenline" d="M335 286 L335 202" marker-end="url(#arrow-green)"/>
+  <text class="safe" x="342" y="252">uninstall</text>
+
+  <path class="greenline" d="M335 342 L335 370 L680 370 L680 82" marker-end="url(#arrow-green)"/>
+  <text class="safe" x="470" y="364">audit reads status on chain</text>
+
+  <path class="greenline" d="M410 314 L480 314" marker-end="url(#arrow-green)"/>
+  <text class="safe" x="426" y="306">move</text>
+</svg>

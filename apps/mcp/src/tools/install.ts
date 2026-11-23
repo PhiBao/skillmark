@@ -16,7 +16,13 @@ import {
 import { verifyStatement } from "../../../../packages/core/src/signature.ts";
 import type { SignatureFile } from "../../../../packages/core/src/types.ts";
 import type { Verification } from "../../../../packages/core/src/verifier.ts";
-import { hermesInstall, hermesList, installSucceeded, verdictOf } from "../hermes.ts";
+import {
+  hermesInstall,
+  hermesList,
+  hermesUninstall,
+  installSucceeded,
+  verdictOf,
+} from "../hermes.ts";
 import { startLocalWellKnown } from "../localWellKnown.ts";
 import {
   attachSettlement,
@@ -119,6 +125,8 @@ async function installVerified(
 
   const server = await startLocalWellKnown(stageRoot);
   try {
+    // Replace any existing copy so Hermes rescans the newly verified bundle.
+    await hermesUninstall(name);
     const result = await hermesInstall(`well-known:${server.url}/.well-known/skills/${name}`);
     const output = `${result.stdout}${result.stderr}`;
     const verdict = verdictOf(output);

@@ -107,6 +107,11 @@ export function verifyChain(file: string): ChainCheck {
   return { valid: true, count: entries.length, root: previousHash };
 }
 
+/** Root (entry hash) at a given sequence number; undefined if the log is shorter. */
+export function rootAtSeq(file: string, seq: number): string | undefined {
+  return readLog(file)[seq]?.hash;
+}
+
 /** The current root commits to all entries so far. */
 export function logRoot(file: string): { root: string; seq: number } {
   const check = verifyChain(file);

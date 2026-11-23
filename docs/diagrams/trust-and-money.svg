@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="720" height="340" role="img" aria-labelledby="tm-title tm-desc">
+  <title id="tm-title">Who holds which key and who can move money</title>
+  <desc id="tm-desc">A human owns a Concordium account, which registers a CIS-8 signing key. The key signs a skill bundle. The index stores the bundle and serves it to Hermes. Hermes pays the publisher account on delivery; a separate sponsor key pays transaction fees.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5B5E57"/>
+    </marker>
+    <marker id="arrow-money" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#2D5A43"/>
+    </marker>
+    <style>
+      .box { fill: #FBFAF7; stroke: #D6D3CB; stroke-width: 1.2; }
+      .title { font: 600 13px "IBM Plex Sans", system-ui, sans-serif; fill: #1E1F1C; }
+      .sub { font: 400 11px "IBM Plex Mono", ui-monospace, monospace; fill: #5B5E57; }
+      .label { font: 400 11px "IBM Plex Sans", system-ui, sans-serif; fill: #34456A; }
+      .money { font: 400 11px "IBM Plex Sans", system-ui, sans-serif; fill: #2D5A43; }
+      .line { stroke: #5B5E57; stroke-width: 1.2; fill: none; }
+      .moneyline { stroke: #2D5A43; stroke-width: 1.4; fill: none; }
+    </style>
+  </defs>
+
+  <rect width="720" height="340" fill="#F4F2EE"/>
+
+  <g>
+    <rect class="box" x="20" y="24" width="180" height="56" rx="2"/>
+    <text class="title" x="34" y="47">Human publisher</text>
+    <text class="sub" x="34" y="66">holds the account key</text>
+  </g>
+  <g>
+    <rect class="box" x="20" y="120" width="180" height="56" rx="2"/>
+    <text class="title" x="34" y="143">Concordium account</text>
+    <text class="sub" x="34" y="162">identity-backed (CIS-8 owner)</text>
+  </g>
+  <g>
+    <rect class="box" x="20" y="216" width="180" height="56" rx="2"/>
+    <text class="title" x="34" y="239">Signing key</text>
+    <text class="sub" x="34" y="258">skillmark:v1 / ed25519</text>
+  </g>
+
+  <g>
+    <rect class="box" x="260" y="120" width="160" height="56" rx="2"/>
+    <text class="title" x="274" y="143">Skill bundle</text>
+    <text class="sub" x="274" y="162">SKILL.md + sig.json</text>
+  </g>
+  <g>
+    <rect class="box" x="470" y="120" width="150" height="56" rx="2"/>
+    <text class="title" x="484" y="143">Skillmark index</text>
+    <text class="sub" x="484" y="162">no keys, serves bytes</text>
+  </g>
+
+  <g>
+    <rect class="box" x="470" y="24" width="150" height="56" rx="2"/>
+    <text class="title" x="484" y="47">Hermes buyer</text>
+    <text class="sub" x="484" y="66">pays on delivery</text>
+  </g>
+  <g>
+    <rect class="box" x="470" y="216" width="150" height="56" rx="2"/>
+    <text class="title" x="484" y="239">Sponsor key</text>
+    <text class="sub" x="484" y="258">pays the fee only</text>
+  </g>
+
+  <path class="line" d="M110 80 L110 120" marker-end="url(#arrow)"/>
+  <text class="label" x="120" y="104">identity</text>
+
+  <path class="line" d="M110 176 L110 216" marker-end="url(#arrow)"/>
+  <text class="label" x="120" y="200">CIS-8 register</text>
+
+  <path class="line" d="M200 244 L260 166" marker-end="url(#arrow)"/>
+  <text class="label" x="206" y="212">signs</text>
+
+  <path class="line" d="M420 148 L470 148" marker-end="url(#arrow)"/>
+  <text class="label" x="424" y="140">publish</text>
+
+  <path class="line" d="M545 120 L545 80" marker-end="url(#arrow)"/>
+  <text class="label" x="552" y="104">verify + serve</text>
+
+  <path class="moneyline" d="M470 60 C400 60 300 80 200 132" marker-end="url(#arrow-money)"/>
+  <text class="money" x="286" y="84">CCD on delivery (x402)</text>
+
+  <path class="moneyline" d="M545 216 L545 176" marker-end="url(#arrow-money)"/>
+  <text class="money" x="552" y="200">fee</text>
+</svg>

@@ -2,7 +2,14 @@
   "$schema": "https://biomejs.dev/schemas/2.6.8/schema.json",
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/dist", "!**/node_modules", "!**/*.md", "!**/.hermes"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/node_modules",
+      "!**/*.md",
+      "!**/.hermes",
+      "!config/hermes-agent-card.json"
+    ]
   },
   "formatter": {
     "enabled": true,

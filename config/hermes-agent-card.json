@@ -3,8 +3,14 @@
   "description": "Hermes agent that verifies and installs Skillmark-signed skills. x402 payments supported.",
   "url": "https://skillmark-index.onrender.com/agents/hermes/agent-card.json",
   "version": "1.0.0",
-  "defaultInputModes": ["text/markdown", "application/json"],
-  "defaultOutputModes": ["text/markdown", "application/json"],
+  "defaultInputModes": [
+    "text/markdown",
+    "application/json"
+  ],
+  "defaultOutputModes": [
+    "text/markdown",
+    "application/json"
+  ],
   "authentication": {
     "schemes": []
   },

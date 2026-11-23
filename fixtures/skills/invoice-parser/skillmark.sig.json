@@ -13,9 +13,9 @@
     "key": {
       "namespace": "skillmark:v1",
       "key_type": "ed25519",
-      "public_key_hex": "30b3a1ce4621e8e4b6d6fd2a0ced344be1a5ea8c574d35186c6c753c0a06f5d5"
+      "public_key_hex": "9cc1ea3d68bbe218460c82996ea43335eb4dfffe354640992cf0ce4b3ba85d94"
     },
-    "issuedAt": "2026-11-23T10:09:00.252Z"
+    "issuedAt": "2026-11-23T10:42:00.206Z"
   },
-  "signature_hex": "58218d9942fe50679669f7ba2620bfbe168b6ab25e87c1350bb703715e815ea2af4bc446331c5ee945920e5113fc254921faf8abac7919bc3b842833bc388d0c"
+  "signature_hex": "7705c12da8d04ed0f54606ec2b7636115fc17aafd6ccc59ca86d8a8c95be783253403a67fb10515d6865d919f91ec01b547fbc0c17e2949ffcd316c5ae73180b"
 }
