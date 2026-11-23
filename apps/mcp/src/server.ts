@@ -6,6 +6,7 @@ import { createRegistryReader } from "../../../packages/core/src/verifier.ts";
 import { anchorLog } from "./tools/anchor.ts";
 import { auditInstalled, renderAudit } from "./tools/audit.ts";
 import { installSkill } from "./tools/install.ts";
+import { publishSkill } from "./tools/publish.ts";
 import { fetchAndVerify, type McpConfig, renderVerification } from "./tools/verify.ts";
 
 export function createServer(config: McpConfig): McpServer {
@@ -46,6 +47,27 @@ export function createServer(config: McpConfig): McpServer {
       } catch (error) {
         return {
           content: [{ type: "text" as const, text: `✕ ${name}: ${(error as Error).message}` }],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  server.tool(
+    "publish_skill",
+    "Sign a skill created by Hermes and publish it to the Skillmark index (payTo = Hermes).",
+    {
+      path: z.string().min(1),
+      priceCcd: z.number().min(0).max(1).default(0),
+      description: z.string().optional(),
+    },
+    async ({ path, priceCcd, description }) => {
+      try {
+        const text = await publishSkill(path, priceCcd ?? 0, config, description);
+        return { content: [{ type: "text" as const, text }] };
+      } catch (error) {
+        return {
+          content: [{ type: "text" as const, text: `✕ publish: ${(error as Error).message}` }],
           isError: true,
         };
       }

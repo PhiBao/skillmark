@@ -56,7 +56,7 @@ export function createWellKnownApp(stageDir: string): Express {
       res.status(404).end("not found");
       return;
     }
-    res.sendFile(full);
+    res.type(file).send(readFileSync(full));
   });
   return app;
 }

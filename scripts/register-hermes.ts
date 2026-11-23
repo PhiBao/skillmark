@@ -185,13 +185,7 @@ async function buildCard(tokenId?: string): Promise<string> {
   const json = `${JSON.stringify(parsedCard, null, 2)}\n`;
   writeFileSync(cardFile, json);
   const hash = createHash("sha256").update(json, "utf8").digest("hex");
-  console.log(
-    JSON.stringify(
-      { cardUrl, file: cardFile, metadataHashHex: hash },
-      null,
-      2,
-    ),
-  );
+  console.log(JSON.stringify({ cardUrl, file: cardFile, metadataHashHex: hash }, null, 2));
   return hash;
 }
 

@@ -1,4 +1,12 @@
-import { closeSync, existsSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { stateDir } from "./state.ts";
 
@@ -45,6 +53,7 @@ export function readSpend(): SpendFile {
 }
 
 async function withLock<T>(fn: () => Promise<T> | T): Promise<T> {
+  mkdirSync(stateDir(), { recursive: true });
   const file = lockFile();
   const deadline = Date.now() + 10_000;
   for (;;) {

@@ -8,8 +8,14 @@ import { x402Client } from "@x402/core/client";
 import { decodePaymentRequiredHeader, decodePaymentResponseHeader } from "@x402/core/http";
 import { wrapFetchWithPayment } from "@x402/fetch";
 import { appendEntry } from "../../../../packages/core/src/log.ts";
+import {
+  agentByExternalReference,
+  checkBadge,
+  verifyAgentCard,
+} from "../../../../packages/core/src/registryMcp.ts";
 import { verifyStatement } from "../../../../packages/core/src/signature.ts";
 import type { SignatureFile } from "../../../../packages/core/src/types.ts";
+import type { Verification } from "../../../../packages/core/src/verifier.ts";
 import { hermesInstall, hermesList, installSucceeded, verdictOf } from "../hermes.ts";
 import { startLocalWellKnown } from "../localWellKnown.ts";
 import {
@@ -73,6 +79,31 @@ async function listing(
   return found;
 }
 
+/** If the publisher key belongs to a CIS-8004 agent, surface its badge and refuse a revoked agent. */
+async function publisherBadge(
+  verification: Verification,
+): Promise<{ refuse?: string; line?: string }> {
+  if (!verification.owner_account || !verification.key.public_key_hex) return {};
+  try {
+    const agent = await agentByExternalReference({
+      kind: "Cis8",
+      contract_address: { index: 12801, subindex: 0 },
+      key: verification.key,
+    });
+    if (!agent || !agent.token_address) return {};
+    if (String(agent.status).toLowerCase() === "revoked") {
+      return { refuse: "✕ Publisher agent is REVOKED — not installed." };
+    }
+    const badge = (await checkBadge(agent.token_address)) as { badge_valid?: boolean };
+    const card = (await verifyAgentCard(agent.token_id)) as { match?: boolean | null };
+    return {
+      line: `  agent badge ${agent.token_address} ${badge.badge_valid ? "✓" : "✕"} · card ${card.match ? "matches" : "not matched"}`,
+    };
+  } catch {
+    return {};
+  }
+}
+
 async function installVerified(
   skillDir: string,
   name: string,
@@ -127,6 +158,12 @@ export async function installSkill(
       fetched.cleanup();
       return `${summary}\n  Not installed.`;
     }
+    const badge = await publisherBadge(fetched.verification);
+    if (badge.refuse) {
+      fetched.cleanup();
+      log("blocked", { name, version: resolvedVersion, reason: "publisher-agent-revoked" });
+      return `${summary}\n${badge.refuse}`;
+    }
     const result = await installVerified(
       fetched.skillDir,
       name,
@@ -135,7 +172,7 @@ export async function installSkill(
       fetched.verification.owner_account ?? "",
     );
     fetched.cleanup();
-    return `${summary}\n${result}`;
+    return `${summary}\n${badge.line ? `${badge.line}\n` : ""}${result}`;
   }
 
   // ---- paid flow -----------------------------------------------------------
@@ -236,6 +273,17 @@ export async function installSkill(
     extracted.cleanup();
     return `${summary}\n  ✕ TAMPERED AFTER PAYMENT — not installed.\n  receipt tx ${receipt.transaction}`;
   }
+  const badge = await publisherBadge(extracted.verification);
+  if (badge.refuse) {
+    extracted.cleanup();
+    log("blocked", {
+      name,
+      version: resolvedVersion,
+      reason: "publisher-agent-revoked",
+      txHash: receipt.transaction,
+    });
+    return `${summary}\n${badge.refuse}`;
+  }
   const installLine = await installVerified(
     extracted.skillDir,
     name,
@@ -244,7 +292,7 @@ export async function installSkill(
     extracted.verification.owner_account ?? "",
   );
   extracted.cleanup();
-  return `${summary}\n  paid ${Number(amount) / 1e6} CCD on delivery · fee sponsored · tx ${receipt.transaction}\n${installLine}`;
+  return `${summary}\n${badge.line ? `${badge.line}\n` : ""}  paid ${Number(amount) / 1e6} CCD on delivery · fee sponsored · tx ${receipt.transaction}\n${installLine}`;
 }
 
 export { SpendLimitError };
