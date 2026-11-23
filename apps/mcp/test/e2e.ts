@@ -19,6 +19,7 @@ import {
 } from "@concordium/web-sdk";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import express from "express";
 import { c as pack } from "tar";
 import { afterEach, describe, expect, it } from "vitest";
 import { nextNonce, sendAndFinalize } from "../../../packages/core/src/chain.ts";
@@ -34,11 +35,13 @@ import {
 import { buildStatement, signStatement } from "../../../packages/core/src/signature.ts";
 import { SIGNATURE_FILE } from "../../../packages/core/src/types.ts";
 import type { RegistryReader } from "../../../packages/core/src/verifier.ts";
+import { createFacilitator, mountFacilitator } from "../../index/src/facilitator.ts";
 import { createApp } from "../../index/src/server.ts";
 import { openStore } from "../../index/src/store.ts";
 import { hermesList, hermesUninstall } from "../src/hermes.ts";
 
 const dirs: string[] = [];
+const servers: Array<{ close: () => void }> = [];
 let client: Client | undefined;
 let transport: StdioClientTransport | undefined;
 let indexServer: ReturnType<ReturnType<typeof createApp>["listen"]> | undefined;
@@ -59,10 +62,12 @@ afterEach(async () => {
   if (client) await client.close();
   if (transport) await transport.close();
   if (indexServer) indexServer.close();
+  for (const server of servers.splice(0)) server.close();
   client = undefined;
   transport = undefined;
   indexServer = undefined;
   await hermesUninstall("invoice-parser");
+  await hermesUninstall("paid-skill");
   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
@@ -220,6 +225,7 @@ describe("MCP e2e with local Hermes", () => {
     const store = openStore(dataDir);
     const good = await makeListing(dataDir, "invoice-parser", false);
     const bad = await makeListing(dataDir, "tampered-skill", true);
+    const paid = await makeListing(dataDir, "paid-skill", false);
     store.insertListing({
       name: "invoice-parser",
       version: "1.0.0",
@@ -248,7 +254,34 @@ describe("MCP e2e with local Hermes", () => {
       status: "verified",
       publishedAt: new Date().toISOString(),
     });
-    const app = createApp({ store, dataDir });
+    store.insertListing({
+      name: "paid-skill",
+      version: "1.0.0",
+      description: "Paid skill.",
+      manifestHash: paid.manifestHash,
+      sig: paid.sig,
+      bundleSha256: paid.bundleSha256,
+      sizeBytes: 0,
+      price: JSON.stringify({ amountMicroCcd: "250000", asset: "CCD" }),
+      payTo: OWNER,
+      publisherAccount: OWNER,
+      status: "verified",
+      publishedAt: new Date().toISOString(),
+    });
+
+    const handle = createFacilitator({
+      store,
+      sponsorWalletFile: join(homedir(), ".skillmark", "wallets", "sponsor.export"),
+    });
+    const facilitatorApp = express();
+    facilitatorApp.use(express.json());
+    mountFacilitator(facilitatorApp, handle);
+    const facilitatorListener = facilitatorApp.listen(0, "127.0.0.1");
+    servers.push(facilitatorListener);
+    await new Promise<void>((resolve) => facilitatorListener.once("listening", resolve));
+    const facilitatorUrl = `http://127.0.0.1:${(facilitatorListener.address() as AddressInfo).port}/facilitator`;
+
+    const app = createApp({ store, dataDir, facilitatorUrl });
     const listener = app.listen(0, "127.0.0.1");
     indexServer = listener;
     await new Promise<void>((resolve) => listener.once("listening", resolve));
@@ -290,6 +323,21 @@ describe("MCP e2e with local Hermes", () => {
     const installedText = String((installed.content as Array<{ text: string }>)[0].text);
     expect(installedText).toContain("Hermes scanner: safe");
     expect(installedText).toContain("installed");
+
+    const paidInstall = await client.callTool({
+      name: "install_skill",
+      arguments: { name: "paid-skill" },
+    });
+    const paidText = String((paidInstall.content as Array<{ text: string }>)[0].text);
+    expect(paidText).toContain("paid 0.25 CCD on delivery");
+    expect(paidText).toMatch(/tx [0-9a-f]{64}/);
+    expect(paidText).toContain("Hermes scanner: safe");
+    const spend = JSON.parse(readFileSync(join(stateDir, "spend.json"), "utf8")) as {
+      totalMicroCcd: string;
+      payments: Array<{ txHash: string }>;
+    };
+    expect(spend.totalMicroCcd).toBe("250000");
+    expect(spend.payments[0].txHash).toMatch(/^[0-9a-f]{64}$/);
 
     const blocked = await client.callTool({
       name: "install_skill",

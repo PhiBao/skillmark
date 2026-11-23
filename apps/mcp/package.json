@@ -11,6 +11,9 @@
   "dependencies": {
     "@concordium/web-sdk": "12.0.3",
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@x402/concordium": "2.32.0",
+    "@x402/core": "2.32.0",
+    "@x402/fetch": "2.32.0",
     "core": "workspace:*",
     "express": "^5.0.0",
     "tar": "^7.0.0",

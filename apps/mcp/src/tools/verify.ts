@@ -48,6 +48,44 @@ function checkEntries(dir: string): boolean {
   return walk(dir);
 }
 
+/** Extract a bundle to a temp dir and run the verifier. */
+export async function extractAndVerify(
+  bytes: Buffer,
+): Promise<{ verification: Verification; skillDir: string; cleanup: () => void }> {
+  const temp = mkdtempSync(join(tmpdir(), "skillmark-mcp-"));
+  const skillDir = join(temp, "skill");
+  mkdirSync(skillDir);
+  try {
+    const bundleFile = join(temp, "bundle.tgz");
+    writeFileSync(bundleFile, bytes);
+    const rejected: string[] = [];
+    await untar({
+      cwd: skillDir,
+      file: bundleFile,
+      filter: (path: string, entry: any) => {
+        const type = String(entry?.type ?? "File");
+        if (!["File", "Directory"].includes(type) || unsafePath(path)) {
+          rejected.push(path);
+          return false;
+        }
+        return true;
+      },
+    });
+    if (rejected.length || !checkEntries(skillDir)) throw new Error("Unsafe entry in skill bundle");
+    const verification = await verifySkill(skillDir, {
+      registryReader: createRegistryReader(loadConfig()),
+    });
+    return {
+      verification,
+      skillDir,
+      cleanup: () => rmSync(temp, { recursive: true, force: true }),
+    };
+  } catch (error) {
+    rmSync(temp, { recursive: true, force: true });
+    throw error;
+  }
+}
+
 export async function fetchAndVerify(
   name: string,
   version?: string,

@@ -79,6 +79,15 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.0.0
         version: 1.32.2(zod@4.6.7)
+      '@x402/concordium':
+        specifier: 2.32.0
+        version: 2.32.0(@protobuf-ts/runtime-rpc@2.11.1)(cbor2@1.12.0)
+      '@x402/core':
+        specifier: 2.32.0
+        version: 2.32.0
+      '@x402/fetch':
+        specifier: 2.32.0
+        version: 2.32.0
       core:
         specifier: workspace:*
         version: link:../../packages/core
