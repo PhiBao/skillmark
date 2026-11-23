@@ -9,7 +9,7 @@ services:
     branch: main
     autoDeployTrigger: commit
     healthCheckPath: /healthz
-    buildCommand: pnpm i --frozen-lockfile
+    buildCommand: pnpm i --frozen-lockfile && pnpm --filter web build
     startCommand: node --import tsx apps/index/src/server.ts
     envVars:
       - key: DATA_DIR

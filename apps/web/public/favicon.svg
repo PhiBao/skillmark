@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Skillmark">
+  <title>Skillmark</title>
+  <rect width="32" height="32" fill="#1E1F1C"/>
+  <rect x="4.5" y="4.5" width="23" height="23" fill="none" stroke="#F4F2EE" stroke-width="1.6"/>
+  <path d="M10 19.2c1 1.2 2.6 1.9 4.5 1.9 2.5 0 4.1-1.2 4.1-2.9 0-1.5-1.2-2.2-3.7-2.7-2.1-.4-2.9-1-2.9-1.9 0-.9.9-1.4 2.3-1.4 1.3 0 2.5.5 3.4 1.3" fill="none" stroke="#F4F2EE" stroke-width="2.1" stroke-linecap="square"/>
+  <path d="M8 25.5h16" stroke="#F4F2EE" stroke-width="1.8"/>
+</svg>

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -109,6 +110,20 @@ export function createApp({
       })),
     );
   });
+
+  // Built web app (T22+). Vite output is served at the root; /s/* falls back to index.html.
+  const webDist = join(
+    findRepoRoot(fileURLToPath(new URL(".", import.meta.url))),
+    "apps",
+    "web",
+    "dist",
+  );
+  if (existsSync(webDist)) {
+    app.use(express.static(webDist));
+    app.get(/^\/s\/.+$/, (_req, res) => {
+      res.sendFile(join(webDist, "index.html"));
+    });
+  }
 
   return app;
 }
