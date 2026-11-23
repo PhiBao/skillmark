@@ -1,0 +1,17 @@
+{
+  "name": "cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "skillmark": "./bin/skillmark.mjs"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@concordium/web-sdk": "12.0.3",
+    "core": "workspace:*",
+    "tar": "^7.0.0"
+  }
+}

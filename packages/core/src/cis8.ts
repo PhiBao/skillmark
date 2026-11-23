@@ -5,6 +5,8 @@ import {
   Parameter,
   ReceiveName,
 } from "@concordium/web-sdk";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { bytesToHex, hexToBytes } from "@noble/curves/utils.js";
 import { getClient } from "./chain.js";
 import { loadConfig, type NetworkConfig } from "./config.js";
 
@@ -12,6 +14,11 @@ import { loadConfig, type NetworkConfig } from "./config.js";
 export const CIS8_RECEIVE_OWNER_OF_KEY = "CIS-8.ownerOfKey";
 export const CIS8_RECEIVE_REGISTER = "CIS-8.registerExternalKey";
 export const CIS8_RECEIVE_REVOKE = "CIS-8.revoke";
+
+/** Sign CIS-8 canonical bytes with a skillmark ed25519 key (solana-ed25519: raw bytes). */
+export function signCis8Proof(canonicalBytesHex: string, privateKeyHex: string): string {
+  return bytesToHex(ed25519.sign(Buffer.from(canonicalBytesHex, "hex"), hexToBytes(privateKeyHex)));
+}
 
 export interface ExternalKey {
   namespace: string;
