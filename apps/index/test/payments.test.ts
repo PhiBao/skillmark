@@ -7,6 +7,7 @@ import { decodePaymentRequiredHeader } from "@x402/core/http";
 import express from "express";
 import { afterEach, describe, expect, it } from "vitest";
 import { bundlePath } from "../src/bundles.ts";
+import { SETTLE_LIMIT_PER_MINUTE, settleAllowed } from "../src/facilitator.ts";
 import { createApp } from "../src/server.ts";
 import { type ListingRow, openStore } from "../src/store.ts";
 
@@ -88,6 +89,17 @@ async function setup(row: ListingRow, withBundle = true) {
   const app = createApp({ store, dataDir, facilitatorUrl });
   return { store, base: await listen(app) };
 }
+
+describe("facilitator abuse limits", () => {
+  it("caps settles per payTo per minute", () => {
+    const now = 5_000_000;
+    const payTo = `limit-${Math.random()}`;
+    for (let i = 0; i < SETTLE_LIMIT_PER_MINUTE; i += 1)
+      expect(settleAllowed(payTo, now)).toBe(true);
+    expect(settleAllowed(payTo, now)).toBe(false);
+    expect(settleAllowed(payTo, now + 61_000)).toBe(true);
+  });
+});
 
 describe("x402 paid bundles", () => {
   it("returns 402 with payTo, amount and extra.manifestHash", async () => {

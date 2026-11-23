@@ -125,6 +125,25 @@ describe("POST /api/publish", () => {
     expect(response.status).toBe(400);
   });
 
+  it("rejects an oversized decompressed bundle", async () => {
+    const base = await setup();
+    const dir = mkdtempSync(join(tmpdir(), "skillmark-bomb-"));
+    dirs.push(dir);
+    writeFileSync(
+      join(dir, "SKILL.md"),
+      "---\nname: bomb\ndescription: x\nversion: 1.0.0\n---\n# Bomb\n",
+    );
+    writeFileSync(join(dir, "big.bin"), Buffer.alloc(60 * 1024 * 1024, 0));
+    const bombPath = join(dir, "..", "bomb.tgz");
+    dirs.push(bombPath);
+    await pack({ gzip: true, cwd: dir, file: bombPath }, ["./"]);
+    const response = await fetch(`${base}/api/publish`, {
+      method: "POST",
+      body: form(readFileSync(bombPath)),
+    });
+    expect(response.status).toBe(400);
+  });
+
   it("rejects a listing that conflicts with the signed statement", async () => {
     const base = await setup();
     const { bundle, manifestHash } = await signedSkill();

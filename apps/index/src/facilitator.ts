@@ -65,6 +65,20 @@ export function createFacilitator(options: FacilitatorOptions): FacilitatorHandl
   return { facilitator, isAllowedPayTo };
 }
 
+const settleWindows = new Map<string, { count: number; resetAt: number }>();
+export const SETTLE_LIMIT_PER_MINUTE = 10;
+
+/** Bound sponsor-fee abuse from a single payTo. Testable with an injected clock. */
+export function settleAllowed(payTo: string, now = Date.now()): boolean {
+  const entry = settleWindows.get(payTo);
+  if (!entry || now >= entry.resetAt) {
+    settleWindows.set(payTo, { count: 1, resetAt: now + 60_000 });
+    return true;
+  }
+  entry.count += 1;
+  return entry.count <= SETTLE_LIMIT_PER_MINUTE;
+}
+
 export function mountFacilitator(app: Express, handle: FacilitatorHandle): void {
   const { facilitator, isAllowedPayTo } = handle;
   app.get("/facilitator/supported", (_req: Request, res: Response) => {
@@ -87,6 +101,10 @@ export function mountFacilitator(app: Express, handle: FacilitatorHandle): void 
     const requirements = body.paymentRequirements;
     if (requirements?.payTo && !(await isAllowedPayTo(String(requirements.payTo)))) {
       res.json({ success: false, errorReason: "payTo is not a verified payee or CIS-8004 agent" });
+      return;
+    }
+    if (requirements?.payTo && !settleAllowed(String(requirements.payTo))) {
+      res.status(429).json({ success: false, errorReason: "settle rate limit for this payTo" });
       return;
     }
     res.json(await facilitator.settle(body.paymentPayload, requirements));

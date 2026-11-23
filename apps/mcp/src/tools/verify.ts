@@ -59,18 +59,32 @@ export async function extractAndVerify(
     const bundleFile = join(temp, "bundle.tgz");
     writeFileSync(bundleFile, bytes);
     const rejected: string[] = [];
-    await untar({
-      cwd: skillDir,
-      file: bundleFile,
-      filter: (path: string, entry: any) => {
-        const type = String(entry?.type ?? "File");
-        if (!["File", "Directory"].includes(type) || unsafePath(path)) {
-          rejected.push(path);
-          return false;
-        }
-        return true;
-      },
-    });
+    let extractedFiles = 0;
+    let extractedBytes = 0;
+    try {
+      await untar({
+        cwd: skillDir,
+        file: bundleFile,
+        filter: (path: string, entry: any) => {
+          const type = String(entry?.type ?? "File");
+          if (!["File", "Directory"].includes(type) || unsafePath(path)) {
+            rejected.push(path);
+            return false;
+          }
+          if (type === "File") {
+            extractedFiles += 1;
+            extractedBytes += Number(entry?.size ?? 0);
+            if (extractedFiles > 500 || extractedBytes > 50 * 1024 * 1024) {
+              rejected.push(path);
+              return false;
+            }
+          }
+          return true;
+        },
+      });
+    } catch {
+      throw new Error("Unsafe or oversized skill bundle");
+    }
     if (rejected.length || !checkEntries(skillDir)) throw new Error("Unsafe entry in skill bundle");
     const verification = await verifySkill(skillDir, {
       registryReader: createRegistryReader(loadConfig()),
@@ -110,18 +124,32 @@ export async function fetchAndVerify(
     const bundleFile = join(temp, "bundle.tgz");
     writeFileSync(bundleFile, Buffer.from(await bundleResponse.arrayBuffer()));
     const rejected: string[] = [];
-    await untar({
-      cwd: skillDir,
-      file: bundleFile,
-      filter: (path: string, entry: any) => {
-        const type = String(entry?.type ?? "File");
-        if (!["File", "Directory"].includes(type) || unsafePath(path)) {
-          rejected.push(path);
-          return false;
-        }
-        return true;
-      },
-    });
+    let extractedFiles = 0;
+    let extractedBytes = 0;
+    try {
+      await untar({
+        cwd: skillDir,
+        file: bundleFile,
+        filter: (path: string, entry: any) => {
+          const type = String(entry?.type ?? "File");
+          if (!["File", "Directory"].includes(type) || unsafePath(path)) {
+            rejected.push(path);
+            return false;
+          }
+          if (type === "File") {
+            extractedFiles += 1;
+            extractedBytes += Number(entry?.size ?? 0);
+            if (extractedFiles > 500 || extractedBytes > 50 * 1024 * 1024) {
+              rejected.push(path);
+              return false;
+            }
+          }
+          return true;
+        },
+      });
+    } catch {
+      throw new Error("Unsafe or oversized skill bundle");
+    }
     if (rejected.length || !checkEntries(skillDir)) throw new Error("Unsafe entry in skill bundle");
     const sig = JSON.parse(
       readFileSync(join(skillDir, "skillmark.sig.json"), "utf8"),

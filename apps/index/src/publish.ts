@@ -89,18 +89,33 @@ export function registerPublish(app: Express, options: PublishOptions): void {
         const skillDir = join(temp, "skill");
         mkdirSync(skillDir);
         const rejected: string[] = [];
-        await untar({
-          cwd: skillDir,
-          file: bundleFile,
-          filter: (path: string, entry: any) => {
-            const type = String((entry as { type?: string })?.type ?? "File");
-            if (!["File", "Directory"].includes(type) || unsafePath(path)) {
-              rejected.push(path);
-              return false;
-            }
-            return true;
-          },
-        });
+        let extractedFiles = 0;
+        let extractedBytes = 0;
+        try {
+          await untar({
+            cwd: skillDir,
+            file: bundleFile,
+            filter: (path: string, entry: any) => {
+              const type = String((entry as { type?: string })?.type ?? "File");
+              if (!["File", "Directory"].includes(type) || unsafePath(path)) {
+                rejected.push(path);
+                return false;
+              }
+              if (type === "File") {
+                extractedFiles += 1;
+                extractedBytes += Number(entry?.size ?? 0);
+                if (extractedFiles > 500 || extractedBytes > 50 * 1024 * 1024) {
+                  rejected.push(path);
+                  return false;
+                }
+              }
+              return true;
+            },
+          });
+        } catch {
+          res.status(400).json({ error: "unsafe or oversized bundle" });
+          return;
+        }
         // A rejected link/absolute path is a 400; verifySkill decides other invalid cases.
         if (rejected.length > 0 || !requireEntries(skillDir)) {
           res.status(400).json({ error: "unsafe entry in bundle" });

@@ -11,6 +11,7 @@ import {
   SpendLimitError,
 } from "../src/spend.ts";
 import { assertRequirements } from "../src/tools/install.ts";
+import { publishSkill } from "../src/tools/publish.ts";
 
 const dirs: string[] = [];
 const previousState = process.env.SKILLMARK_STATE_DIR;
@@ -67,6 +68,23 @@ describe("payment pre-checks", () => {
   });
   it("rejects a missing or changed manifestHash", () => {
     expect(() => assertRequirements(listing, { ...option, extra: {} })).toThrow(/manifestHash/);
+  });
+});
+
+describe("publish path containment", () => {
+  it("refuses a path outside HERMES_HOME/skills", async () => {
+    process.env.HERMES_HOME = dirs[0];
+    await expect(publishSkill("/etc", 0, { indexUrl: "http://127.0.0.1:1" })).rejects.toThrow(
+      /inside HERMES_HOME/,
+    );
+  });
+  it("refuses a price above 1 CCD", async () => {
+    process.env.HERMES_HOME = dirs[0];
+    const inside = join(dirs[0], "skills", "x");
+    (await import("node:fs")).mkdirSync(inside, { recursive: true });
+    await expect(publishSkill(inside, 2, { indexUrl: "http://127.0.0.1:1" })).rejects.toThrow(
+      /between 0 and 1 CCD/,
+    );
   });
 });
 
