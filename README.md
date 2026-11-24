@@ -79,7 +79,7 @@ Event: **Concordium Trusted Agents Hackathon** (Encode Club). Testnet only.
 ## Provenance
 
 - **Built during the hackathon:** all code in this repository was written on or after 2026-11-23. No prior project code, UI or contract code was reused.
-- **Planning artifacts:** `plan.md`, `ideas.md`, `review.md`, `team-brief.md` and the package under `/home/kiter/common/discovery/concordium-trusted-agents/build/` are discovery/spec material, included as provenance.
+- **Planning and specification:** produced before the build in the founder's private workspace and used to steer implementation. The public repo intentionally contains only product code, docs and the artifacts a judge needs.
 - **AI tools:** built with an OpenCode coding agent running DeepSeek V4.1 Flash, following the pre-approved build package (BUILD/ARCHITECTURE/DECISIONS/DESIGN/TASKS). The human approved BUILD MODE, supplied testnet accounts and the Render token, and performs all submission/npm/domain actions.
 - **Third-party code:** open-source libraries only, pinned in `pnpm-lock.yaml`. Fonts are OFL (see `apps/web/public/fonts/LICENSES.md`).
 
