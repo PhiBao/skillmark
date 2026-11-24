@@ -183,3 +183,7 @@ Demo flow (≤ 3:00) and shot list: [`docs/demo-script.md`](docs/demo-script.md)
 3. Move the index to durable storage and add a hosted facilitator with budgets.
 4. Upstream the `verified` trust-tier patch to Hermes (RFC #40555) and add the optional PLT price rail.
 5. Mainnet readiness: real identity/KYC assumptions, durable anchoring cadence, and a funded sponsor policy.
+
+## License
+
+MIT — see [`LICENSE`](LICENSE). The npm package `skillmark` carries the same license. Self-hosted fonts are OFL (see `apps/web/public/fonts/LICENSES.md`).

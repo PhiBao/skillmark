@@ -2,6 +2,7 @@
   "name": "skillmark-workspace",
   "private": true,
   "type": "module",
+  "license": "MIT",
   "packageManager": "pnpm@11.1.1",
   "dependencies": {
     "@concordium/web-sdk": "12.0.3",
