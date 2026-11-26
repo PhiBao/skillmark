@@ -43,3 +43,31 @@ export function removeInstalled(name: string): InstalledEntry[] {
   saveInstalled(remaining);
   return remaining;
 }
+
+export interface ProtectionState {
+  automatic: boolean;
+  intervalMs: number;
+  lastAuditAt?: string;
+  lastReport?: {
+    checked: number;
+    healthy: number;
+    quarantined: number;
+    uncertain: number;
+  };
+  lastError?: string;
+}
+
+function protectionFile(): string {
+  return join(stateDir(), "protection.json");
+}
+
+export function readProtection(): ProtectionState {
+  const file = protectionFile();
+  if (!existsSync(file)) return { automatic: false, intervalMs: 60_000 };
+  return JSON.parse(readFileSync(file, "utf8")) as ProtectionState;
+}
+
+export function writeProtection(state: ProtectionState): void {
+  mkdirSync(stateDir(), { recursive: true });
+  writeFileSync(protectionFile(), `${JSON.stringify(state, null, 2)}\n`, { mode: 0o600 });
+}

@@ -12,12 +12,15 @@
       "publisherAccount": "45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q",
       "price": null,
       "payTo": null,
-      "publishedAt": "2026-11-23T10:55:09.245Z"
+      "publishedAt": "2026-11-26T00:42:33.646Z"
     },
     {
       "path": "fixtures/skills/hermes-made/meeting-notes",
       "publisherAccount": "4Vrg5rkHN7m2STNTgYAqrxHE1jMAhkeZZ3rfifmtattD9PE5dK",
-      "price": { "amountMicroCcd": "250000", "asset": "CCD" },
+      "price": {
+        "amountMicroCcd": "250000",
+        "asset": "CCD"
+      },
       "payTo": "4Vrg5rkHN7m2STNTgYAqrxHE1jMAhkeZZ3rfifmtattD9PE5dK",
       "publishedAt": "2026-11-23T10:55:10.245Z"
     }

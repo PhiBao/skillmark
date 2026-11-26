@@ -30,7 +30,9 @@ skillmark anchor-verify <txHash> <log.jsonl>
 skillmark init [--index <url>] [--dry-run] [--write-hermes-config]
 ```
 
-The MCP server (`skillmark-mcp`) exposes `verify_skill`, `install_skill`, `audit_installed`, `anchor_log` and `publish_skill`.
+The MCP server (`skillmark-mcp`) exposes `verify_skill`, `install_skill`, `audit_installed`, `protection_status`, `anchor_log` and `publish_skill`.
+
+It audits installed keys every 60 seconds while running. For hourly protection when Hermes is closed, run `skillmark init --with-audit-cron` (requires a running Hermes gateway/scheduler for the cron to fire). Manual checks: `skillmark-mcp audit` and `skillmark-mcp status`.
 
 ## Limits
 

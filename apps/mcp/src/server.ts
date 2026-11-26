@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { loadConfig } from "../../../packages/core/src/config.ts";
 import { createRegistryReader } from "../../../packages/core/src/verifier.ts";
+import { renderProtection, runProtectedAudit, startAuditWatcher } from "./protection.ts";
 import { anchorLog } from "./tools/anchor.ts";
 import { auditInstalled, renderAudit } from "./tools/audit.ts";
 import { installSkill } from "./tools/install.ts";
@@ -104,7 +105,7 @@ export function createServer(config: McpConfig): McpServer {
     {},
     async () => {
       try {
-        const report = await auditInstalled({ reader: createRegistryReader(loadConfig()) }, config);
+        const report = await runProtectedAudit(config);
         return { content: [{ type: "text" as const, text: renderAudit(report) }] };
       } catch (error) {
         return {
@@ -115,6 +116,13 @@ export function createServer(config: McpConfig): McpServer {
     },
   );
 
+  server.tool(
+    "protection_status",
+    "Show automatic audit status, last result and any trust-root error.",
+    {},
+    async () => ({ content: [{ type: "text" as const, text: renderProtection() }] }),
+  );
+
   return server;
 }
 
@@ -122,6 +130,7 @@ if (process.argv[1]?.endsWith("server.ts") || process.argv[1]?.endsWith("server.
   const config: McpConfig = {
     indexUrl: process.env.SKILLMARK_INDEX_URL ?? "http://127.0.0.1:8080",
   };
+  startAuditWatcher(config);
   const transport = new StdioServerTransport();
   await createServer(config).connect(transport);
 }

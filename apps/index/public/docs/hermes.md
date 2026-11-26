@@ -13,7 +13,7 @@ You are an agent setting up Skillmark on a Hermes host. Follow these steps in or
 Installing a global npm package changes the machine. Ask your human, then run:
 
 ```bash
-npm i -g skillmark@0.2.0
+npm i -g skillmark@0.3.0
 ```
 
 Free-only mode needs no wallet. Paid installs need a testnet Concordium wallet export that your human creates and places themselves (see step 5).
@@ -53,7 +53,19 @@ Restart Hermes (or reload MCP). Confirm the tools:
 hermes mcp test skillmark
 ```
 
-You should see `verify_skill`, `install_skill`, `audit_installed`, `anchor_log`, `publish_skill`.
+You should see `verify_skill`, `install_skill`, `audit_installed`, `protection_status`, `anchor_log`, `publish_skill`.
+
+## Automatic revocation protection
+
+While the Skillmark MCP server is running, it re-checks installed signing keys every 60 seconds. Ask it for `protection_status` to see the last audit and any trust-root error. A temporary chain outage leaves skills installed and marks the check uncertain; a definite revocation or tampering quarantines the skill.
+
+For protection when Hermes is closed, ask your human before running:
+
+```bash
+skillmark init --with-audit-cron
+```
+
+This enables Hermes's loopback install permission and creates `skillmark-hourly-audit`. The cron fires only while a Hermes gateway/scheduler is running. Check it with `hermes cron status` and `hermes cron list`.
 
 ## 4. Test on the free demo skill
 
@@ -77,7 +89,7 @@ Never ask for a seed phrase, and never invent or print a key. Paid installs are 
 
 ## 6. Audit
 
-Call `audit_installed` to re-verify everything installed through Skillmark. Anything whose key was revoked is copied to `~/.hermes/skillmark-quarantine/` and uninstalled.
+Call `protection_status` or `audit_installed` to re-verify everything installed through Skillmark. Anything whose key was definitely revoked is copied to `~/.hermes/skillmark-quarantine/` and uninstalled.
 
 ## Limits
 

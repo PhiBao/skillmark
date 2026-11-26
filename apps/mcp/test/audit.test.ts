@@ -7,7 +7,7 @@ import { buildManifest } from "../../../packages/core/src/manifest.ts";
 import { buildStatement, signStatement } from "../../../packages/core/src/signature.ts";
 import { SIGNATURE_FILE } from "../../../packages/core/src/types.ts";
 import type { RegistryReader } from "../../../packages/core/src/verifier.ts";
-import { loadInstalled, saveInstalled, stateDir } from "../src/state.ts";
+import { loadInstalled, readProtection, saveInstalled, stateDir } from "../src/state.ts";
 import { type AuditDeps, auditInstalled, renderAudit } from "../src/tools/audit.ts";
 
 const dirs: string[] = [];
@@ -110,12 +110,44 @@ describe("audit_installed", () => {
     expect((await import("node:fs")).readdirSync(quarantine)).toHaveLength(1);
   });
 
+  it("keeps skills installed when the chain is temporarily unreachable", async () => {
+    await seedSkill();
+    const unavailable: RegistryReader = {
+      ...active,
+      ownerOfKeyOnChain: async () => {
+        throw new Error("connection refused");
+      },
+    };
+    const d = deps(unavailable);
+    const report = await auditInstalled(d);
+    expect(report.uncertain).toEqual(["invoice-parser"]);
+    expect(report.quarantined).toEqual([]);
+    expect(d.calls).toEqual([]);
+    expect(loadInstalled()).toHaveLength(1);
+    expect(renderAudit(report)).toContain("kept installed until the next audit");
+    expect(readProtection().lastReport?.uncertain).toBe(1);
+  });
+
   it("renders a readable summary", () => {
-    expect(renderAudit({ checked: ["a"], quarantined: ["a"], healthy: [], missing: [] })).toContain(
-      "QUARANTINED",
-    );
-    expect(renderAudit({ checked: ["b"], quarantined: [], healthy: ["b"], missing: [] })).toContain(
-      "all VERIFIED",
-    );
+    expect(
+      renderAudit({
+        checked: ["a"],
+        quarantined: ["a"],
+        healthy: [],
+        missing: [],
+        uncertain: [],
+        checkedAt: "2026-11-26T00:00:00Z",
+      }),
+    ).toContain("QUARANTINED");
+    expect(
+      renderAudit({
+        checked: ["b"],
+        quarantined: [],
+        healthy: ["b"],
+        missing: [],
+        uncertain: [],
+        checkedAt: "2026-11-26T00:00:00Z",
+      }),
+    ).toContain("all VERIFIED");
   });
 });

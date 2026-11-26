@@ -31,7 +31,7 @@ import {
   rollbackSpend,
   SpendLimitError,
 } from "../spend.ts";
-import { addInstalled, stateDir } from "../state.ts";
+import { addInstalled, readProtection, stateDir } from "../state.ts";
 import { extractAndVerify, fetchAndVerify, type McpConfig, renderVerification } from "./verify.ts";
 
 export interface Listing {
@@ -145,7 +145,11 @@ async function installVerified(
     const list = await hermesList();
     const listed = list.stdout.toLowerCase().includes(name.toLowerCase());
     log("install", { name, version, verdict });
-    return `  Hermes scanner: ${verdict} · ${listed ? "installed" : "install attempted"}`;
+    const protection = readProtection();
+    const audit = protection.automatic
+      ? `automatic audit every ${Math.round(protection.intervalMs / 1000)}s`
+      : "automatic audit off — run audit_installed or enable the hourly cron";
+    return `  Hermes scanner: ${verdict} · ${listed ? "installed" : "install attempted"}\n  protection: ${audit}`;
   } finally {
     await server.close();
   }

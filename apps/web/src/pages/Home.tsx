@@ -72,8 +72,8 @@ export function HomeView({
           </h1>
           <p className="hero-identity">
             Hermes installs a community skill only if an ID-verified human signed it, pays the
-            author on delivery, and pulls it from every agent the moment that author&apos;s key is
-            revoked.
+            author on delivery, and pulls it from every agent on the next audit after that
+            author&apos;s key is revoked.
           </p>
           <div className="hero-facts">
             <p>

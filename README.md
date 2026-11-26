@@ -1,6 +1,6 @@
 # Skillmark
 
-> **Hermes installs a community skill only if an ID-verified human signed it, pays the author on delivery, and pulls it from every agent the moment that author's key is revoked.**
+> **Hermes installs a community skill only if an ID-verified human signed it, pays the author on delivery, and pulls it from every agent on the next audit after that author's key is revoked.**
 
 - **Live app:** https://skillmark-index.onrender.com
 - **Provenance page:** https://skillmark-index.onrender.com/s/invoice-parser/1.0.0
@@ -10,7 +10,7 @@
 ## Try it in 60 seconds
 
 1. Open the provenance page above. Six ruled lines show the contents hash, signing key, key owner, key status, agent badge and paid installs, each with its own check and explorer link.
-2. In a Hermes with Node 22, run `npm i -g skillmark@0.2.0` (publish is H9; until then use the packed tarball), then `skillmark init` and add the printed `mcp_servers` block. Ask Hermes: “Verify invoice-parser with Skillmark and install it.”
+2. In a Hermes with Node 22, run `npm i -g skillmark@0.3.0` (publish is H9; until then use the packed tarball), then `skillmark init` and add the printed `mcp_servers` block. Ask Hermes: “Verify invoice-parser with Skillmark and install it.”
 3. Open the explorer links below: the CIS-8 key registration, a revocation, a sponsored paid delivery, and the 45-byte log anchor.
 
 **Proof links (testnet):**
@@ -155,7 +155,7 @@ Demo flow (≤ 3:00) and shot list: [`docs/demo-script.md`](docs/demo-script.md)
 | `invoice-parser`, `skillmark-setup` | **Real signed fixtures**, published and verifiable |
 | `tampered/`, `unsigned/`, `env-reporter` | **Labelled fixtures**; `env-reporter` targets `example.invalid` and is never executed |
 | Hermes agent + badge | **Live testnet** CIS-8004 token 1449 / `JyP9X5PpNatg3zfjCcn3S` |
-| npm `skillmark@0.2.0` | Packed and tested; **publish is H9** (human) |
+| npm `skillmark@0.3.0` | Packed and tested; **publish is H9** (human) |
 | Unit tests with injected registry readers | **Test doubles**, labelled in code; no production path is mocked |
 
 ## Security and reliability

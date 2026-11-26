@@ -300,6 +300,7 @@ describe("MCP e2e with local Hermes", () => {
         ...process.env,
         SKILLMARK_INDEX_URL: indexUrl,
         SKILLMARK_STATE_DIR: stateDir,
+        SKILLMARK_AUDIT_INTERVAL_MS: "0",
       } as Record<string, string>,
     });
     client = new Client({ name: "skillmark-e2e", version: "1.0.0" });
@@ -307,7 +308,7 @@ describe("MCP e2e with local Hermes", () => {
 
     const tools = await client.listTools();
     expect(tools.tools.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(["verify_skill", "install_skill"]),
+      expect.arrayContaining(["verify_skill", "install_skill", "protection_status"]),
     );
 
     const verified = await client.callTool({

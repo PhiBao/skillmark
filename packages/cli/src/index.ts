@@ -42,7 +42,7 @@ Usage:
   skillmark revoke <label>
   skillmark verify <dir|url>
   skillmark anchor-verify <txHash> <log.jsonl>
-  skillmark init [--index <url>] [--dry-run] [--write-hermes-config]
+  skillmark init [--index <url>] [--dry-run] [--write-hermes-config] [--with-audit-cron]
 `;
 
 async function main(): Promise<void> {
@@ -64,6 +64,7 @@ async function main(): Promise<void> {
       "pay-to": { type: "string" },
       "dry-run": { type: "boolean", default: false },
       "write-hermes-config": { type: "boolean", default: false },
+      "with-audit-cron": { type: "boolean", default: false },
       json: { type: "boolean", default: false },
     },
     allowPositionals: true,
@@ -104,6 +105,7 @@ async function main(): Promise<void> {
         indexUrl: values.index,
         dryRun: values["dry-run"] === true,
         writeHermesConfig: values["write-hermes-config"] === true,
+        withAuditCron: values["with-audit-cron"] === true,
       });
       break;
     default:

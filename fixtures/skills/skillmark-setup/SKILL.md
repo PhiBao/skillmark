@@ -11,7 +11,7 @@ Use this skill when a human asks you to “set up Skillmark” or pastes the Ski
 ## Steps
 
 1. Confirm Node.js 22+ and the `hermes` CLI. Ask your human before installing global packages.
-2. Run `npm i -g skillmark@0.2.0`.
+2. Run `npm i -g skillmark@0.3.0`.
 3. Run `skillmark init` and read the printed `mcp_servers` block.
 4. Ask your human before editing `~/.hermes/config.yaml`; then run `skillmark init --write-hermes-config` or paste the block.
 5. Restart Hermes or reload MCP, then run `hermes mcp test skillmark`. Expect `verify_skill`, `install_skill`, `audit_installed`, `anchor_log`, `publish_skill`.

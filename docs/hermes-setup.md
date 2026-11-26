@@ -1,100 +1,50 @@
 # Setting up Skillmark in Hermes
 
-This is the operator guide for a Hermes host (the local dev Hermes, a friend's Hermes, or your own). An agent can follow it from `llms.txt` (T37); this file is the human-readable version.
-
-## 1. Add the MCP server
-
-Add to `~/.hermes/config.yaml` (or the active profile's config):
-
-```yaml
-mcp_servers:
-  skillmark:
-    command: node
-    args:
-      - --import
-      - tsx
-      - /absolute/path/to/concordium/apps/mcp/src/server.ts
-    env:
-      SKILLMARK_INDEX_URL: https://skillmark-index.onrender.com
-      SKILLMARK_STATE_DIR: ~/.hermes/skillmark
-      HERMES_HOME: ~/.hermes
-      HERMES_BIN: hermes
-      HERMES_WALLET_FILE: ~/.skillmark/wallets/hermes.export
-```
-
-For the distributed npm package (T36) the entry is just `command: skillmark-mcp`; `skillmark init` prints the exact block.
-
-Restart Hermes, then confirm the tools are visible:
+## Install and connect
 
 ```bash
+npm i -g skillmark@0.3.0
+skillmark init --dry-run
+skillmark init --write-hermes-config
 hermes mcp test skillmark
-# ✓ Connected … Tools discovered: verify_skill, install_skill, anchor_log, audit_installed
 ```
 
-## 2. Install a skill (one line in Hermes)
+`init` respects `HERMES_HOME` and `HERMES_PROFILE`, writes `~/.skillmark/config.json` with mode 0600, and prints the exact MCP block. Free mode needs no wallet. Paid installs need a human-exported testnet wallet at `HERMES_WALLET_FILE`.
 
-> Read https://<index>/llms.txt and set up Skillmark.
+With explicit permission, `init` also sets `security.allow_private_urls: true`. Skillmark needs this only because Hermes fetches the verified staging bundle from `127.0.0.1`; the Hermes scanner still runs and a `dangerous` verdict is never overridden.
 
-or, once configured:
+## Automatic protection
 
-> Verify `invoice-parser` with Skillmark, then install it.
+The MCP server audits installed keys every 60 seconds while it is running. Call `protection_status` for the last result. Chain outages are reported as uncertain and do not quarantine skills; definite revocation or tampering does.
 
-The MCP calls Skillmark's verifier, stages the verified bundle on `127.0.0.1`, and runs `hermes skills install well-known:...` so **Hermes's own scanner still runs**. A `dangerous` verdict is never overridden.
-
-## 3. Hourly audit (T26)
-
-Skillmark can re-verify installed skills every hour and quarantine any whose signing key has been revoked.
-
-Install the audit script into the active profile:
+For protection while Hermes is closed:
 
 ```bash
-mkdir -p ~/.hermes/scripts
-cp /absolute/path/to/concordium/scripts/skillmark-audit.sh ~/.hermes/scripts/
-chmod +x ~/.hermes/scripts/skillmark-audit.sh
-```
-
-Create the hourly job (`--no-agent` means no LLM is called; the script's output is the job result):
-
-```bash
-hermes cron create '0 * * * *' \
-  --name skillmark-hourly-audit \
-  --script skillmark-audit.sh \
-  --no-agent \
-  --deliver local
-```
-
-Manage it:
-
-```bash
+skillmark init --with-audit-cron
+hermes cron status
 hermes cron list
-hermes cron run skillmark-hourly-audit     # queue one run on the next tick
-hermes cron tick                          # execute due jobs once
-hermes cron runs                          # durable execution history
-hermes cron remove skillmark-hourly-audit  # stop it
 ```
 
-The script calls the same `audit_installed` implementation as the MCP tool. It re-verifies each entry in `~/.hermes/skillmark/installed.json` against the files on disk and the chain. Anything no longer `verified` is copied to `~/.hermes/skillmark-quarantine/<name>-<timestamp>` **before** `hermes skills uninstall` removes it — never deleted outright.
+This writes `~/.hermes/scripts/skillmark-audit.sh` and creates `skillmark-hourly-audit` (`0 * * * *`, no LLM). The job calls the installed `skillmark-mcp audit` binary. It only fires while a Hermes gateway/scheduler is running; a one-off `hermes cron run <job>` works without one.
 
-## Verification performed (2026-11-23, Hermes v0.23.3)
+## Manual audit
 
-The job was created (`id f5a61815ec59`), run once with `hermes cron run f5a61815ec59`, and the execution appeared in `hermes cron runs` (`279cef3d1394… completed`) with output saved to `~/.hermes/cron/output/f5a61815ec59/2026-11-23_08-32-48.md`:
-
-```
-✓ 1 installed skill(s) re-verified — all VERIFIED
-```
-
-After revoking a signing key on testnet, the same job printed:
-
-```
-✕ invoice-parser — QUARANTINED (no longer verified; moved to skillmark-quarantine)
+```bash
+skillmark-mcp audit
+skillmark-mcp status
 ```
 
-`--deliver local` suppresses chat notifications; the run remains in the durable history and the Hermes log (`~/.hermes/cron/output/<job>/<timestamp>.md`).
+Or ask Hermes to call `audit_installed` / `protection_status`.
 
-**Scheduler caveat:** a one-off `hermes cron run` works without a gateway, but for the `0 * * * *` schedule to actually fire every hour, the host gateway must be installed and running (`hermes --profile default gateway install` / `gateway run`). `hermes cron status` reports whether a scheduler is serving the profile. This is an operator step, not something Skillmark changes.
+## Verification
 
-## Notes
+A fresh profile should show all six tools:
 
-- On loopback, Hermes's SSRF guard requires `security.allow_private_urls: true` in the local dev config. The npm-distributed MCP serves the same well-known index on `127.0.0.1:47402`; `skillmark init` prints this line.
-- The hourly job only needs read access to the chain and the Skillmark state dir. It never signs or spends.
-- Revocation detection works even when `ownerOfKey` returns `0` with a prior `verified` record (A§4.6 row 7).
+- `verify_skill`
+- `install_skill`
+- `publish_skill`
+- `audit_installed`
+- `protection_status`
+- `anchor_log`
+
+Then: `verify_skill {"name":"invoice-parser"}` → VERIFIED; `install_skill` → Hermes scanner safe; `protection_status` → automatic audit interval and last result.

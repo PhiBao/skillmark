@@ -7,11 +7,15 @@
     "skillmark": "./bin/skillmark.mjs"
   },
   "scripts": {
+    "test": "vitest run",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@concordium/web-sdk": "12.0.3",
     "core": "workspace:*",
     "tar": "^7.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
   }
 }

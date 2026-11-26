@@ -8,6 +8,8 @@ export interface SkillmarkConfig {
   keysDir?: string;
   walletFile?: string;
   signingKeyFile?: string;
+  hermesHome?: string;
+  auditIntervalMs?: number;
 }
 
 /**
@@ -25,4 +27,6 @@ export function applyRuntimeConfig(file = join(homedir(), ".skillmark", "config.
   set("SKILLMARK_KEYS_DIR", config.keysDir);
   set("HERMES_WALLET_FILE", config.walletFile);
   set("HERMES_SIGNING_KEY_FILE", config.signingKeyFile);
+  set("HERMES_HOME", config.hermesHome);
+  set("SKILLMARK_AUDIT_INTERVAL_MS", config.auditIntervalMs?.toString());
 }
