@@ -51,15 +51,18 @@ function fixtureRepo(): { root: string; dataDir: string } {
   return { root, dataDir: mkdtempSync(join(tmpdir(), "skillmark-seed-data-")) };
 }
 
+const ALICE = "45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q";
+const HERMES = "4Vrg5rkHN7m2STNTgYAqrxHE1jMAhkeZZ3rfifmtattD9PE5dK";
+const HERMES_KEY = "9125d2b7c75a89806009aae75446829b59e8b22507b5f365a132bbcd7cc0417d";
 const active: RegistryReader = {
-  ownerOfKeyOnChain: async () => ({
+  ownerOfKeyOnChain: async (key) => ({
     found: true,
-    ownerAccount: "45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q",
+    ownerAccount: key.public_key_hex === HERMES_KEY ? HERMES : ALICE,
     status: "Active",
     lastUpdated: "2026-11-23T10:55:08.000Z",
   }),
-  ownerOfKeyMcp: async () => ({
-    owner: "45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q",
+  ownerOfKeyMcp: async (key) => ({
+    owner: key.public_key_hex === HERMES_KEY ? HERMES : ALICE,
     status: "Active",
   }),
   checkBadge: async () => ({ agents: [] }),
@@ -81,6 +84,32 @@ describe("complete cold-start catalogue", () => {
     ).toEqual(["invoice-parser", "skillmark-setup"]);
   });
 
+  it("refreshes stale verified rows when a seed key is later revoked", async () => {
+    const { root, dataDir } = fixtureRepo();
+    dirs.push(dataDir);
+    const store = openStore(dataDir);
+    await seedIndex(store, root, dataDir, active);
+    expect(store.getListing("invoice-parser", "1.0.0")?.status).toBe("verified");
+
+    const revoked: RegistryReader = {
+      ...active,
+      ownerOfKeyOnChain: async (key) => ({
+        found: true,
+        ownerAccount: key.public_key_hex === HERMES_KEY ? HERMES : ALICE,
+        status: "Revoked",
+      }),
+      ownerOfKeyMcp: async (key) => ({
+        owner: key.public_key_hex === HERMES_KEY ? HERMES : ALICE,
+        status: "Revoked",
+      }),
+    };
+    await seedIndex(store, root, dataDir, revoked);
+    expect(store.getListing("invoice-parser", "1.0.0")?.status).toBe("revoked");
+    expect(store.getListing("skillmark-setup", "1.0.0")?.status).toBe("revoked");
+    // Paid skills are deliberately excluded from native Hermes discovery.
+    expect(buildWellKnownIndex(store.listListings()).skills).toEqual([]);
+  });
+
   it("never seeds a revoked key as verified", async () => {
     const { root, dataDir } = fixtureRepo();
     dirs.push(dataDir);
@@ -100,6 +129,24 @@ describe("complete cold-start catalogue", () => {
     await seedIndex(store, root, dataDir, revoked);
     expect(store.listListings().every((row) => row.status === "revoked")).toBe(true);
     expect(buildWellKnownIndex(store.listListings()).skills).toEqual([]);
+  });
+
+  it("does not attribute a listing to an account that does not own its signing key", async () => {
+    const { root, dataDir } = fixtureRepo();
+    dirs.push(dataDir);
+    const store = openStore(dataDir);
+    const wrongOwner: RegistryReader = {
+      ...active,
+      ownerOfKeyOnChain: async () => ({ found: true, ownerAccount: HERMES, status: "Active" }),
+      ownerOfKeyMcp: async () => ({ owner: HERMES, status: "Active" }),
+    };
+    const report = await seedIndex(store, root, dataDir, wrongOwner);
+    expect(report.seeded.map((row) => row.status)).toEqual([
+      "registry-mismatch",
+      "registry-mismatch",
+      "verified",
+    ]);
+    expect(store.getListing("invoice-parser", "1.0.0")?.publisherAccount).toBe(HERMES);
   });
 
   it("fails closed when chain reads are unavailable", async () => {

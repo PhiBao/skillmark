@@ -1,7 +1,7 @@
 /**
- * Seed the complete signed demo catalogue on every boot. Listings are inserted only
- * after the same verifier used by the product accepts them; a revoked key never
- * becomes a VERIFIED seed. Historical settlement proof is checked on chain first.
+ * Refresh the complete signed demo catalogue on every boot. Listings are written only
+ * after the same verifier used by the product checks them; a revoked key never becomes
+ * a VERIFIED seed. Historical settlement proof is checked on chain first.
  */
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -68,26 +68,29 @@ export async function seedIndex(
     writeFileSync(join(bundlesDir, `${bundleSha256.slice(7)}.tgz`), bytes);
     rmSync(tempBundle, { force: true });
 
-    if (!store.getListing(manifest.name, manifest.version)) {
-      store.insertListing({
-        name: manifest.name,
-        version: manifest.version,
-        description: frontmatter.description ?? "",
-        manifestHash,
-        sig: JSON.stringify(sig),
-        bundleSha256,
-        sizeBytes: bytes.length,
-        price: item.price ? JSON.stringify(item.price) : null,
-        payTo: item.payTo,
-        publisherAccount: item.publisherAccount,
-        status: verification.result,
-        publishedAt: item.publishedAt,
-      });
-    }
+    // Refresh existing rows too: a restart must never leave a stale VERIFIED status,
+    // and signed fixture rotations must replace the previous bundle atomically.
+    const publisherMatches =
+      verification.result !== "verified" || verification.owner_account === item.publisherAccount;
+    const status = publisherMatches ? verification.result : "registry-mismatch";
+    store.insertListing({
+      name: manifest.name,
+      version: manifest.version,
+      description: frontmatter.description ?? "",
+      manifestHash,
+      sig: JSON.stringify(sig),
+      bundleSha256,
+      sizeBytes: bytes.length,
+      price: item.price ? JSON.stringify(item.price) : null,
+      payTo: item.payTo,
+      publisherAccount: verification.owner_account ?? item.publisherAccount,
+      status,
+      publishedAt: item.publishedAt,
+    });
     report.seeded.push({
       name: manifest.name,
       version: manifest.version,
-      status: verification.result,
+      status,
     });
   }
 
