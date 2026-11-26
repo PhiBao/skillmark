@@ -1,0 +1,35 @@
+{
+  "listings": [
+    {
+      "path": "fixtures/skills/invoice-parser",
+      "publisherAccount": "45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q",
+      "price": null,
+      "payTo": null,
+      "publishedAt": "2026-11-23T10:55:08.153Z"
+    },
+    {
+      "path": "fixtures/skills/skillmark-setup",
+      "publisherAccount": "45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q",
+      "price": null,
+      "payTo": null,
+      "publishedAt": "2026-11-23T10:55:09.245Z"
+    },
+    {
+      "path": "fixtures/skills/hermes-made/meeting-notes",
+      "publisherAccount": "4Vrg5rkHN7m2STNTgYAqrxHE1jMAhkeZZ3rfifmtattD9PE5dK",
+      "price": { "amountMicroCcd": "250000", "asset": "CCD" },
+      "payTo": "4Vrg5rkHN7m2STNTgYAqrxHE1jMAhkeZZ3rfifmtattD9PE5dK",
+      "publishedAt": "2026-11-23T10:55:10.245Z"
+    }
+  ],
+  "historicalSettlements": [
+    {
+      "name": "meeting-notes",
+      "version": "1.0.0",
+      "txHash": "cafcf2c033b42c4e1b5f9cb29de4fd2a7b6fd6e7081d0bb5659b3595879c05c7",
+      "payer": "3mhvJTdCv9kDu1qdGoCc8MxXEZuWdRvNJJZfXaiFTHbQCRGe1K",
+      "payTo": "4Vrg5rkHN7m2STNTgYAqrxHE1jMAhkeZZ3rfifmtattD9PE5dK",
+      "amountMicroCcd": "250000"
+    }
+  ]
+}

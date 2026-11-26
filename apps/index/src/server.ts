@@ -9,6 +9,7 @@ import { checkBadge, ownerOfKeyMcp } from "../../../packages/core/src/registryMc
 import type { RegistryReader } from "../../../packages/core/src/verifier.ts";
 import { mountAgentCard } from "./agentCard.ts";
 import { findBundle } from "./bundles.ts";
+import { catalogue } from "./catalogue.ts";
 import { createFacilitator, mountFacilitator } from "./facilitator.ts";
 import { mountPaidBundles } from "./payments.ts";
 import { provenance } from "./provenance.ts";
@@ -42,7 +43,15 @@ export function createApp({
   if (facilitatorUrl) mountPaidBundles(app, { store, dataDir, facilitatorUrl });
 
   app.get("/healthz", (_req, res) => {
-    res.json({ ok: true });
+    const listings = store.listListings();
+    res.json({
+      ok: true,
+      catalogue: {
+        listings: listings.length,
+        verified: listings.filter((row) => row.status === "verified").length,
+        paid: listings.filter((row) => row.price !== null).length,
+      },
+    });
   });
 
   const wellKnown = (_req: express.Request, res: express.Response) => {
@@ -97,19 +106,11 @@ export function createApp({
   }
 
   app.get("/api/skills", (_req, res) => {
-    res.json(
-      store.listListings().map((row) => ({
-        name: row.name,
-        version: row.version,
-        description: row.description,
-        manifestHash: row.manifestHash,
-        price: row.price ? JSON.parse(row.price) : null,
-        payTo: row.payTo,
-        publisherAccount: row.publisherAccount,
-        status: row.status,
-        publishedAt: row.publishedAt,
-      })),
-    );
+    res.json(catalogue(store).listings);
+  });
+
+  app.get("/api/catalogue", (_req, res) => {
+    res.json(catalogue(store));
   });
 
   const repoRoot = findRepoRoot(fileURLToPath(new URL(".", import.meta.url)));
@@ -165,6 +166,14 @@ if (process.argv[1]?.endsWith("server.ts") || process.argv[1]?.endsWith("server.
     facilitatorUrl: `http://127.0.0.1:${port}/facilitator`,
   });
   const { seedIndex } = await import("../../../scripts/seed-index.ts");
-  await seedIndex(store, findRepoRoot(fileURLToPath(new URL(".", import.meta.url))), dataDir);
+  const report = await seedIndex(
+    store,
+    findRepoRoot(fileURLToPath(new URL(".", import.meta.url))),
+    dataDir,
+    registryReader,
+  );
+  console.log(
+    `catalogue seeded: ${report.seeded.map((row) => `${row.name}@${row.version}:${row.status}`).join(", ")}`,
+  );
   app.listen(port, () => console.log(`Skillmark index listening on :${port}`));
 }

@@ -1,0 +1,21 @@
+{
+  "schema": "skillmark/sig/v1",
+  "statement": {
+    "schema": "skillmark/statement/v1",
+    "manifestHash": "sha256:5f8d2f13ea32f15b06d8379d3cfd2160925a7d88114933ae6335f6ab248ec617",
+    "name": "meeting-notes",
+    "version": "1.0.0",
+    "network": "ccd:4221332d34e1694168c2a0c0b3fd0f27",
+    "cis8": {
+      "index": 12801,
+      "subindex": 0
+    },
+    "key": {
+      "namespace": "skillmark:v1",
+      "key_type": "ed25519",
+      "public_key_hex": "9125d2b7c75a89806009aae75446829b59e8b22507b5f365a132bbcd7cc0417d"
+    },
+    "issuedAt": "2026-11-23T10:55:10.245Z"
+  },
+  "signature_hex": "d9b511a9bcf08d564cb87c06201c4d3400f0e836db68b5ea6838ea0819b81f400564f076960f7153ab3a0a37da7c50786effd487e3162fe3cbb7f564d2620103"
+}
