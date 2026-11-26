@@ -91,6 +91,12 @@ A 95.9 second, 1920x1080 H.264/AAC video was generated from the real product sur
 
 QA output: `PASS  no issues`; loudness mean `-17.4 dB`, max `-1.5 dB`. Contact sheet and all eight mid-segment frames were inspected. The MP4 and SRT are attached to the `v0.3.1` GitHub release.
 
+## Presentation deck
+
+An 8-slide deck was authored in `~/open-slide/slides/skillmark/` following that template's brief-first workflow. Identity came from `apps/web/src/tokens.css`: paper `#f4f2ee`, ink `#1e1f1c`, verified green `#2d5a43`, Fraunces display and IBM Plex Sans body. The fonts are self-hosted in the slide assets so export does not depend on an external font service.
+
+`npm run build` passed, all eight pages were inspected in the viewer, and the PPTX export was validated as a PowerPoint 2007+ package with 8 slides and 8 notes slides. It is attached to the `v0.3.1` GitHub release.
+
 ## Still needs the founder
 
 - **H8:** external author validation. No replies have been fabricated.

@@ -7,6 +7,8 @@
 - **Publisher record:** https://skillmark-index.onrender.com/p/45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q
 - **Paid skill:** https://skillmark-index.onrender.com/s/meeting-notes/1.0.0
 - **Demo video (1:36):** https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-demo.mp4 ([subtitles](https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-demo.srt)). Built from the live app and real CLI/Hermes output; no synthetic transactions.
+- **Presentation deck:** https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark.pptx (8 slides with speaker notes)
+- **Project image:** [`docs/project-image.jpg`](docs/project-image.jpg)
 - **Repository:** https://github.com/PhiBao/skillmark
 - **GitHub release package:** https://github.com/PhiBao/skillmark/releases/tag/v0.3.1
 
@@ -163,6 +165,7 @@ The public video above follows the flow in [`docs/demo-script.md`](docs/demo-scr
 | npm `skillmark@0.3.1` | **Published** on npm; GitHub release keeps the checksummed tarball |
 | Hermes host onboarding (H1/T38) | **Verified on the founder's Hermes**: six MCP tools, `invoice-parser` verified/installed, `protection_status` healthy |
 | Public demo video (H7) | **95.9 seconds**, 1080p30, subtitled; MP4 and SRT on the GitHub release |
+| Presentation deck | **8-slide PPTX** with speaker notes on the GitHub release; source in `~/open-slide/slides/skillmark/` |
 | Unit tests with injected registry readers | **Test doubles**, labelled in code; no production path is mocked |
 
 ## Security and reliability
