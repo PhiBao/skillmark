@@ -1,13 +1,26 @@
 # skillmark
 
-Accountable skill publishing for Hermes. A community skill installs only if an ID-verified human signed it; the author is paid on delivery; a revoked key pulls the skill from every agent.
+Accountable skill publishing for Hermes. A community skill installs only if an ID-verified human signed it; the author is paid on delivery; a revoked key pulls the skill from every agent on its next audit.
 
 **Testnet only.** Identities are test identities, not real KYC. Verification limits damage; it does not prove the skill is safe. The Hermes scanner still decides “dangerous”, and that verdict is never overridden.
 
 ## Install
 
+Until npm publication, install the tested GitHub release asset:
+
 ```bash
-npm i -g skillmark
+npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.0/skillmark-0.3.0.tgz
+```
+
+After npm publication:
+
+```bash
+npm i -g skillmark@0.3.0
+```
+
+Then:
+
+```bash
 skillmark init
 ```
 
@@ -27,7 +40,7 @@ skillmark publish <dir> --index <url> [--price <ccd>] [--pay-to <addr>]
 skillmark revoke <label>
 skillmark verify <dir|url>
 skillmark anchor-verify <txHash> <log.jsonl>
-skillmark init [--index <url>] [--dry-run] [--write-hermes-config]
+skillmark init [--index <url>] [--dry-run] [--write-hermes-config] [--with-audit-cron]
 ```
 
 The MCP server (`skillmark-mcp`) exposes `verify_skill`, `install_skill`, `audit_installed`, `protection_status`, `anchor_log` and `publish_skill`.

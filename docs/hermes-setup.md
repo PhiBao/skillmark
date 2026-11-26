@@ -2,8 +2,15 @@
 
 ## Install and connect
 
+Until npm publication, install the tested GitHub release asset:
+
 ```bash
-npm i -g skillmark@0.3.0
+npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.0/skillmark-0.3.0.tgz
+```
+
+After npm publication, use `npm i -g skillmark@0.3.0` instead.
+
+```bash
 skillmark init --dry-run
 skillmark init --write-hermes-config
 hermes mcp test skillmark
