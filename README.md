@@ -13,7 +13,7 @@
 ## Try it in 60 seconds
 
 1. Open the provenance page above. Six ruled lines show the contents hash, signing key, key owner, key status, agent badge and paid installs, each with its own check and explorer link. Release and settlement history sit below; publisher links open observed keys and versions.
-2. In a Hermes with Node 22, install the tested GitHub release asset until npm publish (H9) is complete: `npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz`. Then run `skillmark init` and add the printed `mcp_servers` block. Ask Hermes: “Verify invoice-parser with Skillmark and install it.”
+2. In a Hermes with Node 22, install the tested GitHub release asset until npm publish (H9) is complete: `npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz`. If npm rejects remote URLs, [use the curl-and-verify fallback](docs/hermes-setup.md). Then run `skillmark init` and add the printed `mcp_servers` block. Ask Hermes: “Verify invoice-parser with Skillmark and install it.”
 3. Open the explorer links below: the CIS-8 key registration, a revocation, a sponsored paid delivery, and the 45-byte log anchor.
 
 **Proof links (testnet):**
@@ -161,6 +161,7 @@ Demo flow (≤ 3:00) and shot list: [`docs/demo-script.md`](docs/demo-script.md)
 | Hermes agent + badge | **Live testnet** CIS-8004 token 1449 / `JyP9X5PpNatg3zfjCcn3S` |
 | GitHub release `v0.3.1` | Built and tested tarball plus `SHA256SUMS`; install from the release asset |
 | npm `skillmark@0.3.1` | Ready for H9; **npm publish is human-only** |
+| Hermes host onboarding (H1/T38) | **Verified on the founder's Hermes**: six MCP tools, `invoice-parser` verified/installed, `protection_status` healthy |
 | Unit tests with injected registry readers | **Test doubles**, labelled in code; no production path is mocked |
 
 ## Security and reliability
@@ -183,7 +184,7 @@ Demo flow (≤ 3:00) and shot list: [`docs/demo-script.md`](docs/demo-script.md)
 
 ## Roadmap
 
-1. Publish `skillmark` to npm and onboard the human's cloud Hermes through `llms.txt` (H9/H1/T38).
+1. Publish `skillmark` to npm (H9). Hermes onboarding through `llms.txt` (H1/T38) is verified; see `docs/product-validation.md`.
 2. Recruit real authors (H8) and quote them; publisher records currently show only keys and releases observed by this index.
 3. Move the index to durable storage and add a hosted facilitator with budgets.
 4. Upstream the `verified` trust-tier patch to Hermes (RFC #40555) and add the optional PLT price rail.

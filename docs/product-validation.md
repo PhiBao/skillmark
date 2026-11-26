@@ -67,10 +67,22 @@ A unit test proves a temporary chain read failure leaves the skill installed, re
 - Hermes setup command failures now stop `init` with a nonzero error instead of printing success.
 - Invalid audit intervals fail early; state directories are created with mode 0700.
 - Added `skillmark-mcp --version`; both binaries report `0.3.1`.
-- Installed the packed `0.3.1` tarball into a clean npm prefix, created a fresh local Hermes profile, discovered all six tools, verified and installed `invoice-parser`, and confirmed automatic audit status. The test profile was removed; the founder's cloud Hermes was not used.
+- Installed the packed `0.3.1` tarball into a clean npm prefix, created a fresh local Hermes profile, discovered all six tools, verified and installed `invoice-parser`, and confirmed automatic audit status. The test profile was removed.
+
+## Founder Hermes validation (H1/T38)
+
+The founder installed `v0.3.1` on their Hermes host and reported:
+
+- npm rejected the remote tarball URL with `EALLOWREMOTE`; they downloaded the same release asset with `curl`, matched SHA256 `6ebf082a…c14df`, and installed from the local file. No npm publication or remote fetch was needed.
+- `skillmark --version` returned `0.3.1`; config and state directories were created with modes 0600 and 0700.
+- `hermes mcp test skillmark` discovered all six tools. An already-running chat session did not see newly added tools, so the tools were driven over stdio for validation; a gateway/session restart is needed for native tool injection in normal use.
+- `verify_skill` returned VERIFIED for `invoice-parser`; `install_skill` returned `Hermes scanner: safe · installed`; `protection_status` reported automatic 60-second auditing.
+- No wallet was created, no paid skill was touched, and the hourly cron was not enabled at the founder's request.
+
+This closes H1/T38. The local and cloud Hermes runs used the same published release asset.
 
 ## Still needs the founder
 
 - **H9:** publish `skillmark@0.3.1` to npm. The tarball is built and tested, but the agent does not publish.
-- **H1:** run the one-line onboarding on the founder's cloud Hermes after H9.
+- **H7:** record the founder's demo from `docs/demo-script.md`; no synthetic footage is used.
 - **H8:** external author validation. No replies have been fabricated.

@@ -8,6 +8,16 @@ Until npm publication, install the tested GitHub release asset:
 npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
 ```
 
+If npm rejects remote URLs with `EALLOWREMOTE`, download and verify the same asset, then install the local file:
+
+```bash
+curl -fsSL -o /tmp/skillmark-0.3.1.tgz \
+  https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
+sha256sum /tmp/skillmark-0.3.1.tgz
+# 6ebf082a108d716e507bd01658b7b4bfc9ff57bf257e2dd74f7e2f8ec8bc14df
+npm i -g /tmp/skillmark-0.3.1.tgz
+```
+
 After npm publication, use `npm i -g skillmark@0.3.1` instead.
 
 ```bash

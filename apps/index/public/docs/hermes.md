@@ -18,6 +18,18 @@ Until npm publication, use the tested GitHub release asset:
 npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
 ```
 
+If npm refuses remote URLs with `EALLOWREMOTE`, download the same asset, verify its published SHA256, and install from the local file:
+
+```bash
+curl -fsSL -o /tmp/skillmark-0.3.1.tgz \
+  https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
+sha256sum /tmp/skillmark-0.3.1.tgz
+# expected: 6ebf082a108d716e507bd01658b7b4bfc9ff57bf257e2dd74f7e2f8ec8bc14df
+npm i -g /tmp/skillmark-0.3.1.tgz
+```
+
+This is byte-identical to the release asset. Some Hermes hosts also block transitive `postinstall` scripts through npm's `allowScripts`; the CLI still works.
+
 After npm publication, `npm i -g skillmark@0.3.1` also works.
 
 Free-only mode needs no wallet. Paid installs need a testnet Concordium wallet export that your human creates and places themselves (see step 5).
@@ -46,7 +58,7 @@ Restart Hermes (or reload MCP). Confirm the tools:
 hermes mcp test skillmark
 ```
 
-You should see `verify_skill`, `install_skill`, `audit_installed`, `protection_status`, `anchor_log`, `publish_skill`.
+You should see `verify_skill`, `install_skill`, `audit_installed`, `protection_status`, `anchor_log`, `publish_skill`. If an already-running chat session does not see newly added tools, restart the Hermes gateway/session; direct stdio calls are only a diagnostic fallback, not required for normal use.
 
 ## Automatic revocation protection
 
