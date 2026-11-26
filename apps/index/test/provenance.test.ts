@@ -1,5 +1,4 @@
-import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -20,7 +19,13 @@ function setup(): Store {
   const dataDir = mkdtempSync(join(tmpdir(), "skillmark-prov-"));
   dirs.push(dataDir);
   const store = openStore(dataDir);
-  const sig = { statement: { key } };
+  const sig = {
+    statement: {
+      key,
+      network: "ccd:4221332d34e1694168c2a0c0b3fd0f27",
+      cis8: { index: 12801, subindex: 0 },
+    },
+  };
   const row: ListingRow = {
     name: "invoice-parser",
     version: "1.0.0",
@@ -65,6 +70,30 @@ describe("provenance API", () => {
     ]);
     expect(result?.lines[3].value).toContain("Active");
     expect(result?.lines[4].value).toBe("JyP9X5PpNatg3zfjCcn3S");
+    expect(result?.key).toEqual(key);
+    expect(result?.network).toBe("ccd:4221332d34e1694168c2a0c0b3fd0f27");
+    expect(result?.cis8).toEqual({ index: 12801, subindex: 0 });
+    expect(result?.publisherAccount).toBe(OWNER);
+  });
+
+  it("returns total settlement count with the latest chain links", async () => {
+    const store = setup();
+    for (let index = 1; index <= 6; index += 1) {
+      store.addSettlement({
+        name: "invoice-parser",
+        version: "1.0.0",
+        txHash: index.toString(16).padStart(64, "0"),
+        payer: OWNER,
+        amountMicroCcd: "250000",
+      });
+    }
+    const result = await provenance("invoice-parser", "1.0.0", { store, reader: active });
+    expect(result?.lines.find((line) => line.label === "Paid installs")?.value).toContain(
+      "6 total",
+    );
+    expect(result?.settlementTotal).toBe(6);
+    expect(result?.settlements).toHaveLength(5);
+    expect(result?.settlements[0].link).toContain("ccdexplorer.io/testnet/transaction/");
   });
 
   it("shows revoked without a verified state", async () => {

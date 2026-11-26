@@ -1,5 +1,5 @@
 import type { ExternalKey } from "../../../packages/core/src/cis8.js";
-import { accountUrl } from "../../../packages/core/src/explorer.ts";
+import { accountUrl, txUrl } from "../../../packages/core/src/explorer.ts";
 import type { SignatureFile } from "../../../packages/core/src/types.ts";
 import type { RegistryReader } from "../../../packages/core/src/verifier.js";
 import type { ListingRow, Store } from "./store.ts";
@@ -17,6 +17,12 @@ export interface Provenance {
   version: string;
   status: "verified" | "revoked" | "unknown-key" | "registry-mismatch" | "unreachable" | "tampered";
   lines: ProvenanceLine[];
+  key: ExternalKey;
+  network: string;
+  cis8: { index: number; subindex: number };
+  publisherAccount: string;
+  settlements: Array<{ txHash: string; payer: string; amountMicroCcd: string; link: string }>;
+  settlementTotal: number;
   checkedAt: string;
   cached: boolean;
 }
@@ -125,13 +131,14 @@ async function compute(listing: ListingRow, deps: ProvenanceDeps): Promise<Prove
   }
 
   const settlements = deps.store.settlements(listing.name, listing.version);
+  const settlementCount = deps.store.settlementCount(listing.name, listing.version);
   lines.push({
     label: "Paid installs",
-    value: settlements.length
-      ? `${settlements.length} recent · ${settlements.map((row) => row.txHash.slice(0, 8)).join(", ")}`
+    value: settlementCount
+      ? `${settlementCount} total · latest ${settlements.map((row) => row.txHash.slice(0, 8)).join(", ")}`
       : "None",
     check: "ok",
-    detail: settlements.length ? "sponsored fee" : undefined,
+    detail: settlementCount ? "sponsored fee" : undefined,
   });
 
   return {
@@ -139,6 +146,12 @@ async function compute(listing: ListingRow, deps: ProvenanceDeps): Promise<Prove
     version: listing.version,
     status,
     lines,
+    key,
+    network: sig.statement.network,
+    cis8: sig.statement.cis8,
+    publisherAccount: listing.publisherAccount,
+    settlements: settlements.map((row) => ({ ...row, link: txUrl(row.txHash) })),
+    settlementTotal: settlementCount,
     checkedAt: new Date(deps.now?.() ?? Date.now()).toISOString(),
     cached: false,
   };

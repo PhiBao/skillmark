@@ -7,6 +7,10 @@ const verified: ProvenanceData = {
   version: "1.0.0",
   status: "verified",
   checkedAt: "2026-11-23T09:00:00Z",
+  key: { namespace: "skillmark:v1", key_type: "ed25519", public_key_hex: "ab".repeat(32) },
+  network: "ccd:4221332d34e1694168c2a0c0b3fd0f27",
+  cis8: { index: 12801, subindex: 0 },
+  publisherAccount: "45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q",
   lines: [
     { label: "Contents", value: "sha256:cf07bf4b…b45d91 · 1234 bytes", check: "ok" },
     { label: "Signed by key", value: "skillmark:v1 / ed25519 / ab12…ef", check: "ok" },
@@ -40,6 +44,52 @@ describe("provenance document", () => {
     }
     expect(html).toContain("Identity limits damage");
     expect(html).toContain("skillmark verify");
+  });
+
+  it("links the publisher record, release history and real settlements", () => {
+    const html = render({
+      data: {
+        ...verified,
+        settlements: [
+          {
+            txHash: "12".repeat(32),
+            amountMicroCcd: "250000",
+            link: `https://ccdexplorer.io/testnet/transaction/${"12".repeat(32)}`,
+          },
+        ],
+        settlementTotal: 1,
+      },
+      loading: false,
+      fixture: null,
+      history: [
+        {
+          name: "invoice-parser",
+          version: "1.0.0",
+          manifestHash: "sha256:cd",
+          keyHex: "ab".repeat(32),
+          publishedAt: "2026-11-23T10:00:00Z",
+        },
+      ],
+    });
+    expect(html).toContain("Publisher record");
+    expect(html).toContain("/p/45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q");
+    expect(html).toContain("Version history");
+    expect(html).toContain("Settlement history");
+    expect(html).toContain("1 total observed");
+    expect(html).toContain("0.25 CCD");
+    expect(html).toContain("ccdexplorer.io/testnet/transaction/");
+  });
+
+  it("uses the actual publisher account in the explorer link", () => {
+    const html = render({
+      data: {
+        ...verified,
+        publisherAccount: "4Vrg5rkHN7m2STNTgYAqrxHE1jMAhkeZZ3rfifmtattD9PE5dK",
+      },
+      loading: false,
+      fixture: null,
+    });
+    expect(html).toContain("/account/4Vrg5rkHN7m2STNTgYAqrxHE1jMAhkeZZ3rfifmtattD9PE5dK");
   });
 
   it("renders revoked with the quarantine banner", () => {

@@ -9,6 +9,20 @@ export interface ProvenanceData {
   status: StampStatus | "unknown-key";
   lines: LedgerLine[];
   checkedAt: string;
+  key?: { namespace: string; key_type: string; public_key_hex: string };
+  network?: string;
+  cis8?: { index: number; subindex: number };
+  publisherAccount?: string;
+  settlements?: Array<{ txHash: string; amountMicroCcd: string; link: string }>;
+  settlementTotal?: number;
+}
+
+interface HistoryEvent {
+  name: string;
+  version: string;
+  manifestHash: string;
+  keyHex: string;
+  publishedAt: string;
 }
 
 const BASE_LINES = (manifest: string, keyOwner: string): LedgerLine[] => [
@@ -71,9 +85,10 @@ interface Props {
   loading: boolean;
   error?: string | null;
   fixture?: string | null;
+  history?: HistoryEvent[];
 }
 
-export function ProvenanceView({ data, loading, error, fixture }: Props) {
+export function ProvenanceView({ data, loading, error, fixture, history = [] }: Props) {
   const fixtureData = fixture ? FIXTURES[fixture] : undefined;
   const view = fixtureData ?? data;
   const status: StampStatus =
@@ -151,8 +166,71 @@ export function ProvenanceView({ data, loading, error, fixture }: Props) {
                 npx skillmark verify https://skillmark-index.onrender.com/s/{view.name}/
                 {view.version}
               </code>
-              <code className="code">registry MCP: owner_of_key {"->"} owner + status</code>
+              {view.key ? (
+                <code className="code">
+                  {`owner_of_key ${JSON.stringify({ network: view.network, external_key: view.key })}`}
+                </code>
+              ) : null}
             </section>
+
+            {view.publisherAccount ? (
+              <section aria-labelledby="publisher-record">
+                <h2 id="publisher-record" className="section-label">
+                  Publisher record
+                </h2>
+                <a href={`/p/${view.publisherAccount}`}>
+                  Observed keys, versions and paid installs
+                </a>
+              </section>
+            ) : null}
+
+            {!fixtureData && history.length ? (
+              <section aria-labelledby="version-history">
+                <h2 id="version-history" className="section-label">
+                  Version history
+                </h2>
+                <ol className="ledger">
+                  {history.map((event) => (
+                    <li className="ledger-row" key={`${event.version}-${event.manifestHash}`}>
+                      <span className="ledger-label">{event.publishedAt}</span>
+                      <span className="ledger-value">
+                        {event.version}
+                        <span className="ledger-detail">{event.manifestHash}</span>
+                        <span className="ledger-detail">
+                          key {event.keyHex.slice(0, 10)}…{event.keyHex.slice(-6)}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : null}
+
+            {!fixtureData && view.settlements?.length ? (
+              <section aria-labelledby="settlement-history">
+                <h2 id="settlement-history" className="section-label">
+                  Settlement history
+                </h2>
+                {view.settlementTotal !== undefined ? (
+                  <p>
+                    {view.settlementTotal} total observed
+                    {view.settlements.length < view.settlementTotal
+                      ? ` · latest ${view.settlements.length} shown`
+                      : ""}
+                    .
+                  </p>
+                ) : null}
+                <ol className="ledger">
+                  {view.settlements.map((settlement) => (
+                    <li className="ledger-row" key={settlement.txHash}>
+                      <span className="ledger-label">Paid install</span>
+                      <span>{Number(settlement.amountMicroCcd) / 1e6} CCD</span>
+                      <a href={settlement.link}>{settlement.txHash.slice(0, 12)}…</a>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : null}
 
             <section className="limits" aria-label="Limits">
               <h2>Limits</h2>
@@ -171,9 +249,11 @@ export function ProvenanceView({ data, loading, error, fixture }: Props) {
 
       <footer className="footer">
         <a href="https://github.com/PhiBao/skillmark">Repository</a>
-        <a href="https://ccdexplorer.io/testnet/account/45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q">
-          Publisher account
-        </a>
+        {view?.publisherAccount ? (
+          <a href={`https://ccdexplorer.io/testnet/account/${view.publisherAccount}`}>
+            Publisher account
+          </a>
+        ) : null}
         <span>Testnet only</span>
       </footer>
     </>
@@ -192,6 +272,22 @@ export function Provenance({
   const [data, setData] = useState<ProvenanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryEvent[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/skills/${encodeURIComponent(name)}/history`)
+      .then((response) => (response.ok ? response.json() : { events: [] }))
+      .then((result: { events: HistoryEvent[] }) => {
+        if (!cancelled) setHistory(result.events);
+      })
+      .catch(() => {
+        if (!cancelled) setHistory([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [name]);
 
   useEffect(() => {
     let cancelled = false;
@@ -223,5 +319,13 @@ export function Provenance({
     };
   }, [name, version]);
 
-  return <ProvenanceView data={data} loading={loading} error={error} fixture={fixture} />;
+  return (
+    <ProvenanceView
+      data={data}
+      loading={loading}
+      error={error}
+      fixture={fixture}
+      history={history}
+    />
+  );
 }

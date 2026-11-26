@@ -73,6 +73,7 @@ describe("home page", () => {
     expect(html).toContain("skillmark-setup");
     expect(html).toContain("meeting-notes");
     expect(html).toContain("/s/invoice-parser/1.0.0");
+    expect(html).toContain("/p/45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q");
     expect(html).toContain("free");
     expect(html).toContain("0.25 CCD");
     expect(html).toContain("45jkbo…Ua5q");

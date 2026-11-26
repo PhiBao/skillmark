@@ -1,11 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { loadConfig } from "../../../packages/core/src/config.ts";
-import { createRegistryReader } from "../../../packages/core/src/verifier.ts";
 import { renderProtection, runProtectedAudit, startAuditWatcher } from "./protection.ts";
 import { anchorLog } from "./tools/anchor.ts";
-import { auditInstalled, renderAudit } from "./tools/audit.ts";
+import { renderAudit } from "./tools/audit.ts";
 import { installSkill } from "./tools/install.ts";
 import { publishSkill } from "./tools/publish.ts";
 import { fetchAndVerify, type McpConfig, renderVerification } from "./tools/verify.ts";

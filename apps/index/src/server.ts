@@ -14,6 +14,7 @@ import { createFacilitator, mountFacilitator } from "./facilitator.ts";
 import { mountPaidBundles } from "./payments.ts";
 import { provenance } from "./provenance.ts";
 import { registerPublish } from "./publish.ts";
+import { publisherRecord } from "./publishers.ts";
 import { openStore, type Store } from "./store.ts";
 import { buildWellKnownIndex } from "./wellKnown.ts";
 
@@ -113,6 +114,18 @@ export function createApp({
     res.json(catalogue(store));
   });
 
+  app.get("/api/skills/:name/history", (req, res) => {
+    res.json({ events: store.listingHistory(String(req.params.name)) });
+  });
+
+  if (registryReader) {
+    app.get("/api/publishers/:account", async (req, res) => {
+      res.json(
+        await publisherRecord(String(req.params.account), { store, reader: registryReader }),
+      );
+    });
+  }
+
   const repoRoot = findRepoRoot(fileURLToPath(new URL(".", import.meta.url)));
   const publicDir = join(repoRoot, "apps", "index", "public");
   if (existsSync(publicDir)) {
@@ -132,7 +145,7 @@ export function createApp({
   const webDist = join(repoRoot, "apps", "web", "dist");
   if (existsSync(webDist)) {
     app.use(express.static(webDist));
-    app.get(/^\/s\/.+$/, (_req, res) => {
+    app.get(/^\/(?:s|p)\/.+$/, (_req, res) => {
       res.sendFile(join(webDist, "index.html"));
     });
   }

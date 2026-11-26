@@ -559,15 +559,15 @@ summary:focus-visible {
   text-decoration: none;
 }
 
-.trust-test-list a:hover .trust-test-title {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
 .trust-test-title {
   font-family: var(--font-display);
   font-size: var(--t20);
   font-weight: 600;
+}
+
+.trust-test-list a:hover .trust-test-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .trust-test-description {
@@ -584,4 +584,19 @@ summary:focus-visible {
 .trust-test-outcome--dangerous,
 .trust-test-outcome--tampered {
   color: var(--revoked);
+}
+
+.scope-note {
+  margin-top: var(--s4);
+  color: var(--muted);
+  font-size: var(--t13);
+}
+
+.section-label {
+  margin: var(--s8) 0 var(--s3);
+  font-size: var(--t14);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
 }

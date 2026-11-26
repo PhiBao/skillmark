@@ -108,7 +108,9 @@ export function HomeView({
                 </a>
                 <span className="mark-version">v{listing.version}</span>
                 <Stamp status={safeStatus(listing.status)} />
-                <span className="mark-publisher">{shortAccount(listing.publisherAccount)}</span>
+                <a className="mark-publisher" href={`/p/${listing.publisherAccount}`}>
+                  {shortAccount(listing.publisherAccount)}
+                </a>
                 <span className="mark-price">{priceLabel(listing.price)}</span>
               </li>
             ))}

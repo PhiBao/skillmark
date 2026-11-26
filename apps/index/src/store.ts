@@ -1,5 +1,5 @@
 import { mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import Database from "better-sqlite3";
 
 export interface ListingRow {
@@ -32,7 +32,24 @@ export interface Store {
   settlements(
     name: string,
     version: string,
+    limit?: number,
   ): Array<{ txHash: string; payer: string; amountMicroCcd: string; createdAt: string }>;
+  settlementCount(name: string, version: string): number;
+  listingHistory(
+    name: string,
+    version?: string,
+  ): Array<{
+    name: string;
+    version: string;
+    manifestHash: string;
+    keyHex: string;
+    keyNamespace: string;
+    keyType: string;
+    price: string | null;
+    payTo: string | null;
+    publisherAccount: string;
+    publishedAt: string;
+  }>;
   addKeyHistory(row: { key: string; name: string; version: string; result: string }): void;
 }
 
@@ -56,6 +73,17 @@ export function openStore(dataDir: string): Store {
       id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL, name TEXT NOT NULL,
       version TEXT NOT NULL, result TEXT NOT NULL, createdAt TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS listing_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, version TEXT NOT NULL,
+      manifestHash TEXT NOT NULL, keyHex TEXT NOT NULL, keyNamespace TEXT NOT NULL,
+      keyType TEXT NOT NULL, price TEXT, payTo TEXT, publisherAccount TEXT NOT NULL,
+      publishedAt TEXT NOT NULL, UNIQUE(name, version, manifestHash)
+    );
+    DELETE FROM settlements WHERE id NOT IN (
+      SELECT MIN(id) FROM settlements GROUP BY name, version, txHash
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS settlement_identity
+      ON settlements(name, version, txHash);
   `);
   const insertListing = db.prepare(
     `INSERT INTO listings (name,version,description,manifestHash,sig,bundleSha256,sizeBytes,price,payTo,publisherAccount,status,publishedAt)
@@ -67,10 +95,24 @@ export function openStore(dataDir: string): Store {
   const getListingStmt = db.prepare("SELECT * FROM listings WHERE name = ? AND version = ?");
   const listListingsStmt = db.prepare("SELECT * FROM listings ORDER BY publishedAt DESC");
   const addSettlementStmt = db.prepare(
-    "INSERT INTO settlements (name,version,txHash,payer,amountMicroCcd,createdAt) VALUES (?,?,?,?,?,?)",
+    "INSERT OR IGNORE INTO settlements (name,version,txHash,payer,amountMicroCcd,createdAt) VALUES (?,?,?,?,?,?)",
   );
   const settlementsStmt = db.prepare(
-    "SELECT txHash,payer,amountMicroCcd,createdAt FROM settlements WHERE name=? AND version=? ORDER BY id DESC LIMIT 5",
+    "SELECT txHash,payer,amountMicroCcd,createdAt FROM settlements WHERE name=? AND version=? ORDER BY id DESC LIMIT ?",
+  );
+  const settlementCountStmt = db.prepare(
+    "SELECT COUNT(*) AS count FROM settlements WHERE name=? AND version=?",
+  );
+  const insertListingEventStmt = db.prepare(
+    `INSERT OR IGNORE INTO listing_events
+      (name,version,manifestHash,keyHex,keyNamespace,keyType,price,payTo,publisherAccount,publishedAt)
+      VALUES (?,?,?,?,?,?,?,?,?,?)`,
+  );
+  const listingHistoryStmt = db.prepare(
+    "SELECT name,version,manifestHash,keyHex,keyNamespace,keyType,price,payTo,publisherAccount,publishedAt FROM listing_events WHERE name=? ORDER BY id DESC",
+  );
+  const listingVersionHistoryStmt = db.prepare(
+    "SELECT name,version,manifestHash,keyHex,keyNamespace,keyType,price,payTo,publisherAccount,publishedAt FROM listing_events WHERE name=? AND version=? ORDER BY id DESC",
   );
   const addKeyHistoryStmt = db.prepare(
     "INSERT INTO key_history (key,name,version,result,createdAt) VALUES (?,?,?,?,?)",
@@ -79,6 +121,27 @@ export function openStore(dataDir: string): Store {
     db,
     insertListing: (row) => {
       insertListing.run(row);
+      const key = (
+        JSON.parse(row.sig) as {
+          statement?: {
+            key?: { namespace?: string; key_type?: string; public_key_hex?: string };
+          };
+        }
+      ).statement?.key;
+      if (key?.public_key_hex) {
+        insertListingEventStmt.run(
+          row.name,
+          row.version,
+          row.manifestHash,
+          key.public_key_hex,
+          key.namespace ?? "skillmark:v1",
+          key.key_type ?? "ed25519",
+          row.price,
+          row.payTo,
+          row.publisherAccount,
+          row.publishedAt,
+        );
+      }
     },
     getListing: (name, version) => getListingStmt.get(name, version) as ListingRow | undefined,
     listListings: () => listListingsStmt.all() as ListingRow[],
@@ -92,12 +155,30 @@ export function openStore(dataDir: string): Store {
         new Date().toISOString(),
       );
     },
-    settlements: (name, version) =>
-      settlementsStmt.all(name, version) as Array<{
+    settlements: (name, version, limit = 5) =>
+      settlementsStmt.all(name, version, limit) as Array<{
         txHash: string;
         payer: string;
         amountMicroCcd: string;
         createdAt: string;
+      }>,
+    settlementCount: (name, version) =>
+      (settlementCountStmt.get(name, version) as { count: number }).count,
+    listingHistory: (name, version) =>
+      (version ? listingVersionHistoryStmt : listingHistoryStmt).all(
+        name,
+        ...(version ? [version] : []),
+      ) as Array<{
+        name: string;
+        version: string;
+        manifestHash: string;
+        keyHex: string;
+        keyNamespace: string;
+        keyType: string;
+        price: string | null;
+        payTo: string | null;
+        publisherAccount: string;
+        publishedAt: string;
       }>,
     addKeyHistory: (row) => {
       addKeyHistoryStmt.run(row.key, row.name, row.version, row.result, new Date().toISOString());

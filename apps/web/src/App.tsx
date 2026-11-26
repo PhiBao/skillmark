@@ -1,5 +1,6 @@
 import { Home } from "./pages/Home.tsx";
 import { Provenance } from "./pages/Provenance.tsx";
+import { Publisher } from "./pages/Publisher.tsx";
 
 function route() {
   const path = window.location.pathname;
@@ -14,6 +15,8 @@ function route() {
       />
     );
   }
+  const publisher = /^\/p\/([^/]+)\/?$/.exec(path);
+  if (publisher) return <Publisher account={decodeURIComponent(publisher[1])} />;
   return <Home />;
 }
 
