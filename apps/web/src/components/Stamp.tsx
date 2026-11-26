@@ -8,6 +8,7 @@ export type StampStatus =
   | "unknown-key"
   | "registry-mismatch"
   | "unreachable"
+  | "dangerous"
   | "checking";
 
 const LABELS: Record<StampStatus, string> = {
@@ -18,6 +19,7 @@ const LABELS: Record<StampStatus, string> = {
   "unknown-key": "Unknown key",
   "registry-mismatch": "Registry mismatch",
   unreachable: "Unreachable",
+  dangerous: "Dangerous",
   checking: "Checking",
 };
 
@@ -29,11 +31,13 @@ const ICONS: Record<StampStatus, "ok" | "fail" | "unknown"> = {
   "unknown-key": "unknown",
   "registry-mismatch": "unknown",
   unreachable: "unknown",
+  dangerous: "fail",
   checking: "unknown",
 };
 
 export function Stamp({ status }: { status: StampStatus }) {
-  const tone = status === "registry-mismatch" ? "mismatch" : status;
+  const tone =
+    status === "registry-mismatch" ? "mismatch" : status === "dangerous" ? "revoked" : status;
   return (
     <span className={`stamp stamp--${tone}`} role="status">
       <CheckIcon kind={ICONS[status]} />

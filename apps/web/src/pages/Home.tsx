@@ -10,18 +10,51 @@ interface Listing {
   publisherAccount: string;
   status: StampStatus;
 }
+interface TrustTest {
+  name: string;
+  state: "tampered" | "unsigned" | "unreachable" | "dangerous";
+  title: string;
+  description: string;
+  expected: string;
+  href: string;
+}
+interface Catalogue {
+  listings: Listing[];
+  trustTests: TrustTest[];
+}
 
 const CLAWHAVOC_SOURCE = "https://cybersecuritynews.com/clawhavoc-poisoned-openclaws-clawhub";
 
 function shortAccount(address: string): string {
   return address.length > 12 ? `${address.slice(0, 6)}…${address.slice(-4)}` : address;
 }
-
 function priceLabel(price: Listing["price"]): string {
   return price ? `${Number(price.amountMicroCcd) / 1e6} ${price.asset}` : "free";
 }
+function safeStatus(status: string): StampStatus {
+  const known: StampStatus[] = [
+    "verified",
+    "revoked",
+    "tampered",
+    "unsigned",
+    "unknown-key",
+    "registry-mismatch",
+    "unreachable",
+    "dangerous",
+    "checking",
+  ];
+  return known.includes(status as StampStatus) ? (status as StampStatus) : "unknown-key";
+}
 
-export function HomeView({ listings, error }: { listings: Listing[]; error: string | null }) {
+export function HomeView({
+  listings,
+  trustTests,
+  error,
+}: {
+  listings: Listing[];
+  trustTests: TrustTest[];
+  error: string | null;
+}) {
   return (
     <>
       <header className="masthead">
@@ -35,10 +68,13 @@ export function HomeView({ listings, error }: { listings: Listing[]; error: stri
       <main>
         <section className="hero" aria-labelledby="hero-headline">
           <h1 className="hero-title" id="hero-headline">
+            Accountable skills for Hermes.
+          </h1>
+          <p className="hero-identity">
             Hermes installs a community skill only if an ID-verified human signed it, pays the
             author on delivery, and pulls it from every agent the moment that author&apos;s key is
             revoked.
-          </h1>
+          </p>
           <div className="hero-facts">
             <p>
               1,184 malicious skills from 12 accounts reached a public agent marketplace.{" "}
@@ -49,6 +85,15 @@ export function HomeView({ listings, error }: { listings: Listing[]; error: stri
             </p>
             <p>Hermes trusts four repos. Everyone else is a stranger.</p>
           </div>
+          <div className="hero-actions">
+            <a className="primary-action" href="/llms.txt">
+              Set up in Hermes
+            </a>
+            <a href="#authors">Publish a skill</a>
+          </div>
+          <code className="code onboarding-line">
+            Read https://skillmark-index.onrender.com/llms.txt and set up Skillmark.
+          </code>
         </section>
 
         <section className="marks" aria-labelledby="marks-heading">
@@ -62,9 +107,27 @@ export function HomeView({ listings, error }: { listings: Listing[]; error: stri
                   {listing.name}
                 </a>
                 <span className="mark-version">v{listing.version}</span>
-                <Stamp status={listing.status} />
+                <Stamp status={safeStatus(listing.status)} />
                 <span className="mark-publisher">{shortAccount(listing.publisherAccount)}</span>
                 <span className="mark-price">{priceLabel(listing.price)}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="trust-tests" aria-labelledby="trust-tests-heading">
+          <h2 id="trust-tests-heading">Try the trust tests</h2>
+          <p>Labelled demos. These are not live claims about a publisher.</p>
+          <ol className="trust-test-list">
+            {trustTests.map((test) => (
+              <li key={`${test.name}-${test.state}`}>
+                <a href={test.href}>
+                  <span className="trust-test-title">{test.title}</span>
+                  <span className="trust-test-description">{test.description}</span>
+                  <span className={`trust-test-outcome trust-test-outcome--${test.state}`}>
+                    {test.expected}
+                  </span>
+                </a>
               </li>
             ))}
           </ol>
@@ -125,18 +188,18 @@ export function HomeView({ listings, error }: { listings: Listing[]; error: stri
 }
 
 export function Home() {
-  const [listings, setListings] = useState<Listing[]>([]);
+  const [catalogue, setCatalogue] = useState<Catalogue>({ listings: [], trustTests: [] });
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/skills")
+    fetch("/api/catalogue")
       .then(async (response) => {
         if (!response.ok) throw new Error(`Listings unavailable (HTTP ${response.status}).`);
-        return (await response.json()) as Listing[];
+        return (await response.json()) as Catalogue;
       })
       .then((result) => {
-        if (!cancelled) setListings(result);
+        if (!cancelled) setCatalogue(result);
       })
       .catch((reason: Error) => {
         if (!cancelled) setError(reason.message);
@@ -146,5 +209,5 @@ export function Home() {
     };
   }, []);
 
-  return <HomeView listings={listings} error={error} />;
+  return <HomeView listings={catalogue.listings} trustTests={catalogue.trustTests} error={error} />;
 }

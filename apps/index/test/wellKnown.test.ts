@@ -105,6 +105,21 @@ describe("index well-known and bundles", () => {
     });
   });
 
+  it("exposes real listings separately from labelled trust-test demos", async () => {
+    const { store, app } = setup();
+    store.insertListing(listing());
+    const base = await listen(app);
+    const result = (await (await fetch(`${base}/api/catalogue`)).json()) as any;
+    expect(result.listings).toHaveLength(1);
+    expect(result.counts).toEqual({ listings: 1, verified: 1, paid: 0 });
+    expect(result.trustTests.map((test: any) => test.state)).toEqual([
+      "tampered",
+      "unsigned",
+      "unreachable",
+      "dangerous",
+    ]);
+  });
+
   it("returns 402 for a paid bundle and 404 for a missing one", async () => {
     const { dataDir, store, app } = setup();
     mkdirSync(join(dataDir, "bundles"), { recursive: true });

@@ -479,3 +479,109 @@ summary:focus-visible {
 .author-steps .code {
   margin-top: var(--s1);
 }
+
+.hero-identity {
+  max-width: 58ch;
+  margin: var(--s4) 0 0;
+  color: var(--muted);
+  font-size: var(--t16);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s4);
+  margin-top: var(--s6);
+}
+
+.primary-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--s4);
+  border: 1px solid var(--assay);
+  border-radius: 2px;
+  background: var(--assay);
+  color: var(--sheet);
+  text-decoration: none;
+}
+
+.primary-action:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.onboarding-line {
+  margin-top: var(--s3);
+}
+
+.trust-tests {
+  padding: var(--s8) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.trust-tests h2 {
+  font-size: var(--t14);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 var(--s2);
+}
+
+.trust-tests > p {
+  margin: 0 0 var(--s4);
+  color: var(--muted);
+  font-size: var(--t14);
+}
+
+.trust-test-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.trust-test-list li {
+  border-bottom: 1px solid var(--rule);
+}
+
+.trust-test-list li:last-child {
+  border-bottom: none;
+}
+
+.trust-test-list a {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s1);
+  min-height: 44px;
+  padding: var(--s3) 0;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.trust-test-list a:hover .trust-test-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.trust-test-title {
+  font-family: var(--font-display);
+  font-size: var(--t20);
+  font-weight: 600;
+}
+
+.trust-test-description {
+  color: var(--muted);
+  font-size: var(--t14);
+}
+
+.trust-test-outcome {
+  font-family: var(--font-mono);
+  font-size: var(--t13);
+  color: var(--caution);
+}
+
+.trust-test-outcome--dangerous,
+.trust-test-outcome--tampered {
+  color: var(--revoked);
+}
