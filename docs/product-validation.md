@@ -12,7 +12,7 @@ After a Render redeploy/restart, `GET /api/catalogue` returned:
 
 `GET /api/provenance/meeting-notes/1.0.0` showed one paid install, `cafcf2c0…`. The seed inserted it only after gRPC confirmed the finalized transfer: buyer `3mhv…`, payee `4Vrg…`, amount 250000 microCCD, and a sponsor signature. No synthetic settlement row is used.
 
-Seed tests also prove a revoked key is stored as revoked and omitted from the public well-known index, and a chain outage is stored as unknown-key rather than verified.
+Seed tests also prove a revoked key is stored as revoked and omitted from the public well-known index, a chain outage is stored as unknown-key rather than verified, stale rows are refreshed on restart, and a listing is not attributed to an account that does not own its signing key.
 
 ## Fresh Hermes profile onboarding
 
@@ -24,7 +24,7 @@ Package: `skillmark@0.3.0`, installed from its packed tarball into a clean npm p
 4. `hermes mcp test skillmark` discovered all six tools: `verify_skill`, `install_skill`, `publish_skill`, `anchor_log`, `audit_installed`, `protection_status`.
 5. `install_skill invoice-parser` returned VERIFIED, Hermes scanner SAFE, installed, and protection status.
 
-The profile and temporary global npm prefix were removed after the test. The founder's cloud Hermes was not used.
+The local test profile was removed after the test. The packed tarball was installed into an isolated temporary npm prefix; nothing was published. The founder's cloud Hermes was not used.
 
 ## Automatic revocation quarantine
 
@@ -36,9 +36,27 @@ With the MCP connection kept open (the same lifecycle Hermes uses):
 4. `protection_status`: `1 checked · 0 verified · 1 quarantined · 0 uncertain`.
 5. `hermes skills list` no longer contained `invoice-parser`; the files remained under `skillmark-quarantine/`.
 
+## Seed recovery after the revocation test
+
+The watcher test deliberately revoked `alice-k2`, which was also the shared key for the two free demo fixtures. The live index correctly marked both revoked. The fixtures were then re-signed with the already-active `demo-seed` key owned by the same testnet publisher account; no key status or chain result was fabricated. After redeploy, `/healthz` again reported 3 listings, 3 verified and 1 paid.
+
+Startup now upserts the configured signed fixtures after verification, so a restart cannot leave an old VERIFIED row behind after revocation or a signed fixture rotation.
+
+## Publisher and history pages
+
+Live checks after the trust-network deploy:
+
+- Alice's publisher record: VERIFIED, one observed active key, two published skills and two release events.
+- Hermes's publisher record: VERIFIED, one active key and one paid install.
+- `meeting-notes` provenance: VERIFIED, one total settlement linking to finalized testnet transaction `cafcf2c0…`.
+- `/p/<account>` serves the publisher SPA route; publisher links from the home and provenance pages resolve.
+- Browser snapshots showed the complete catalogue, observed key, release hashes and settlement link.
+
+Tests cover key rotation, revoked/unreachable/unknown publishers, duplicate settlement receipts, total-versus-latest labels, and empty/error UI states. Publisher records explicitly say they are observations from this index, not reputation scores or complete account histories.
+
 ## Outage safety
 
-A unit test now proves a temporary chain read failure leaves the skill installed, reports it as uncertain, and retries on the next audit. Only definite revocation/tampering/mismatch or missing files trigger quarantine.
+A unit test proves a temporary chain read failure leaves the skill installed, reports it as uncertain, and retries on the next audit. Only definite revocation/tampering/mismatch or missing files trigger quarantine.
 
 ## Still needs the founder
 

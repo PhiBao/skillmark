@@ -4,12 +4,14 @@
 
 - **Live app:** https://skillmark-index.onrender.com
 - **Provenance page:** https://skillmark-index.onrender.com/s/invoice-parser/1.0.0
+- **Publisher record:** https://skillmark-index.onrender.com/p/45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q
+- **Paid skill:** https://skillmark-index.onrender.com/s/meeting-notes/1.0.0
 - **Demo video:** recorded by the founder from [`docs/demo-script.md`](docs/demo-script.md) (H7). The script is finalised in T34; no synthetic footage is used.
 - **Repository:** https://github.com/PhiBao/skillmark
 
 ## Try it in 60 seconds
 
-1. Open the provenance page above. Six ruled lines show the contents hash, signing key, key owner, key status, agent badge and paid installs, each with its own check and explorer link.
+1. Open the provenance page above. Six ruled lines show the contents hash, signing key, key owner, key status, agent badge and paid installs, each with its own check and explorer link. Release and settlement history sit below; publisher links open observed keys and versions.
 2. In a Hermes with Node 22, run `npm i -g skillmark@0.3.0` (publish is H9; until then use the packed tarball), then `skillmark init` and add the printed `mcp_servers` block. Ask Hermes: “Verify invoice-parser with Skillmark and install it.”
 3. Open the explorer links below: the CIS-8 key registration, a revocation, a sponsored paid delivery, and the 45-byte log anchor.
 
@@ -47,7 +49,7 @@ Skillmark adds a thin, checkable trust layer:
 1. **Publish:** `skillmark keygen alice` → `register-key` (CIS-8 transaction) → `sign ./skill` → `publish ./skill --price 0.5 --pay-to <account>`.
 2. **Install:** ask Hermes to install a skill. The MCP verifies the signature and key on chain, stages the bundle on loopback, and calls `hermes skills install well-known:…` so the scanner runs.
 3. **Pay:** the x402 client reads the 402 requirements, checks payee/amount/network/`manifestHash` against the signed listing, then pays. Settlement waits for finality; the bundle is served only after a full successful read.
-4. **Revoke:** `skillmark revoke alice`. `audit_installed` re-verifies every installed entry and moves failures to `~/.hermes/skillmark-quarantine/` before uninstalling.
+4. **Revoke:** `skillmark revoke alice`. The MCP watcher re-verifies installed keys every 60 seconds while it runs; `audit_installed` runs the same check on demand. Definite failures move to `~/.hermes/skillmark-quarantine/` before uninstalling. `skillmark init --with-audit-cron` adds an hourly Hermes job for when a scheduler is running.
 5. **Prove:** the provenance page and `skillmark verify` recompute the manifest and read CIS-8 directly.
 
 The activation moment is the first `✓ VERIFIED` line backed by a real explorer transaction.
@@ -55,7 +57,7 @@ The activation moment is the first `✓ VERIFIED` line backed by a real explorer
 ## Innovation
 
 - **Signature as install authority:** the index never accepts a bundle it cannot verify; the CLI, MCP and web all apply the same ten-row decision table, with a direct chain read as the trust root and the Registry MCP cross-check failing closed.
-- **Revocation as a fleet action:** the hash-chained log, the revocation transaction and `audit_installed` combine into “one transaction pulls a bad skill off every agent”.
+- **Revocation as a fleet action:** the hash-chained log, the revocation transaction and automatic audits combine into “one transaction pulls a bad skill off every agent on its next audit”.
 - **Pay-on-delivery with sponsored fees:** x402 `exact` + Concordium sponsored transfers, with the signed `manifestHash` carried inside the payment requirements to stop substitution.
 - **Agent-to-agent commerce:** a Hermes agent can sign a skill it made, publish it with `payTo = Hermes`, and another Hermes profile verifies its CIS-8004 badge before buying.
 
@@ -80,7 +82,7 @@ Event: **Concordium Trusted Agents Hackathon** (Encode Club). Testnet only.
 
 - **Built during the hackathon:** all code in this repository was written on or after 2026-11-23. No prior project code, UI or contract code was reused.
 - **Planning and specification:** produced before the build in the founder's private workspace and used to steer implementation. The public repo intentionally contains only product code, docs and the artifacts a judge needs.
-- **AI tools:** built with an OpenCode coding agent running DeepSeek V4.1 Flash, following the pre-approved build package (BUILD/ARCHITECTURE/DECISIONS/DESIGN/TASKS). The human approved BUILD MODE, supplied testnet accounts and the Render token, and performs all submission/npm/domain actions.
+- **AI tools:** built with an OpenCode coding agent following the pre-approved build package (BUILD/ARCHITECTURE/DECISIONS/DESIGN/TASKS). The human approved BUILD MODE, supplied testnet accounts and the Render token, and performs all submission/npm/domain actions.
 - **Third-party code:** open-source libraries only, pinned in `pnpm-lock.yaml`. Fonts are OFL (see `apps/web/public/fonts/LICENSES.md`).
 
 ## Architecture
@@ -96,9 +98,9 @@ Concordium testnet ◀───────────┘                      
 
 - `packages/core` — formats, keys, chain reads, Registry MCP client, verifier, log, anchor.
 - `packages/cli` — publisher commands; every chain action prints an explorer link.
-- `apps/index` — SQLite listings/settlements, well-known index (free skills only), publish API, own x402 facilitator, provenance API, static web.
-- `apps/mcp` — Hermes-side tools, spend limits, loopback well-known server, install/audit/quarantine, anchor.
-- `apps/web` — provenance and home pages (Vite + React, plain CSS).
+- `apps/index` — SQLite listings/release events/settlements, well-known index (free skills only), publish API, own x402 facilitator, provenance/publisher APIs, static web.
+- `apps/mcp` — Hermes-side tools, spend limits, loopback well-known server, install/automatic audit/quarantine, anchor.
+- `apps/web` — home, provenance, publisher, release-history and settlement-history pages (Vite + React, plain CSS).
 - `packages/dist` — the npm package `skillmark` with bundled `skillmark` and `skillmark-mcp` bins.
 
 **Boundaries:** the index never holds publisher keys. The MCP never overrides a Hermes scanner verdict. Only `verified` skills install. Paid skills are absent from the public well-known index because native Hermes cannot do x402 (D18).
@@ -125,7 +127,7 @@ pnpm --filter core test:testnet   # opt-in live chain read
 pnpm --filter index test:testnet  # opt-in live x402 payment
 ```
 
-Run the index (seeds the signed `invoice-parser` fixture at boot):
+Run the index (refreshes and chain-checks all three signed demo listings at boot):
 
 ```bash
 DATA_DIR=./data SPONSOR_WALLET_FILE=~/.skillmark/wallets/sponsor.export pnpm --filter index start
@@ -151,8 +153,9 @@ Demo flow (≤ 3:00) and shot list: [`docs/demo-script.md`](docs/demo-script.md)
 | Thing | Status |
 |---|---|
 | CIS-8 register/revoke, x402 settlement, log anchor | **Live on Concordium testnet**, links above |
-| Index, provenance page, home page | **Live** on Render (free tier; cold start ~1 min, ephemeral disk, re-seeded at boot) |
-| `invoice-parser`, `skillmark-setup` | **Real signed fixtures**, published and verifiable |
+| Index, home, provenance and publisher pages | **Live** on Render (free tier; cold start ~1 min, ephemeral disk, signed demo catalogue re-seeded and chain-checked at boot) |
+| `invoice-parser`, `skillmark-setup` | **Real signed free fixtures**, published and verifiable |
+| `meeting-notes` | **Real signed paid fixture**, 0.25 CCD with finalized `cafcf2c0…` settlement |
 | `tampered/`, `unsigned/`, `env-reporter` | **Labelled fixtures**; `env-reporter` targets `example.invalid` and is never executed |
 | Hermes agent + badge | **Live testnet** CIS-8004 token 1449 / `JyP9X5PpNatg3zfjCcn3S` |
 | npm `skillmark@0.3.0` | Packed and tested; **publish is H9** (human) |
@@ -171,7 +174,7 @@ Demo flow (≤ 3:00) and shot list: [`docs/demo-script.md`](docs/demo-script.md)
 - **Testnet only.** Identities are test identities, not real KYC.
 - **Verified ≠ safe** (D16).
 - **Operator-controlled demo:** publisher and buyers are the Skillmark team (D15); no real author quotes yet (H8).
-- **Render free tier:** cold starts and an ephemeral disk; runtime listings are non-durable.
+- **Render free tier:** cold starts and an ephemeral disk. The signed demo catalogue is deterministic and chain-checked at boot; external runtime listings are non-durable.
 - **PLT not shipped** (H5 absent); CCD is the only paid asset.
 - Rate limits are in-memory and reset on restart.
 - The name “Skillmark” is a working title without trademark clearance (D14).
@@ -179,7 +182,7 @@ Demo flow (≤ 3:00) and shot list: [`docs/demo-script.md`](docs/demo-script.md)
 ## Roadmap
 
 1. Publish `skillmark` to npm and onboard the human's cloud Hermes through `llms.txt` (H9/H1/T38).
-2. Recruit real authors (H8) and quote them; add author profiles and per-author listing pages.
+2. Recruit real authors (H8) and quote them; publisher records currently show only keys and releases observed by this index.
 3. Move the index to durable storage and add a hosted facilitator with budgets.
 4. Upstream the `verified` trust-tier patch to Hermes (RFC #40555) and add the optional PLT price rail.
 5. Mainnet readiness: real identity/KYC assumptions, durable anchoring cadence, and a funded sponsor policy.

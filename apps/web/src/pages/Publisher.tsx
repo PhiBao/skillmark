@@ -49,6 +49,9 @@ interface PublisherData {
 function short(value: string): string {
   return value.length > 18 ? `${value.slice(0, 10)}…${value.slice(-6)}` : value;
 }
+function dateLabel(value: string): string {
+  return value.slice(0, 10);
+}
 function status(value: string): StampStatus {
   if (value === "verified" || value === "Active") return "verified";
   if (value === "revoked" || value === "Revoked") return "revoked";
@@ -146,7 +149,9 @@ export function PublisherView({
                       className="ledger-row"
                       key={`${event.name}-${event.version}-${event.manifestHash}`}
                     >
-                      <span className="ledger-label">{event.publishedAt}</span>
+                      <span className="ledger-label" title={event.publishedAt}>
+                        {dateLabel(event.publishedAt)}
+                      </span>
                       <span className="ledger-value">
                         {event.name} {event.version}
                         <span className="ledger-detail">{event.manifestHash}</span>

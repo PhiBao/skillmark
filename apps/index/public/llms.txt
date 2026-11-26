@@ -5,6 +5,8 @@
 - [Set up in Hermes](https://skillmark-index.onrender.com/docs/hermes.md): install the `skillmark` npm package, add the MCP server, and verify a skill. Written for an agent to execute.
 - [Publish a skill](https://skillmark-index.onrender.com/docs/authors.md): keygen, register the key on Concordium CIS-8, sign, publish free or paid.
 - [Verify a skill](https://skillmark-index.onrender.com/docs/verify.md): check a signature, key owner and key status from the CLI or the registry MCP.
+- [Live catalogue](https://skillmark-index.onrender.com): signed free and paid listings, plus labelled trust-test demos.
+- [Publisher record](https://skillmark-index.onrender.com/p/45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q): observed signing keys, release history and paid installs; not a reputation score.
 - [Limits](https://skillmark-index.onrender.com/docs/hermes.md#limits): what “verified” does and does not mean.
 
 Index: https://skillmark-index.onrender.com — Repository: https://github.com/PhiBao/skillmark

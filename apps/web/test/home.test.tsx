@@ -96,6 +96,14 @@ describe("home page", () => {
     expect(html).not.toContain("secure");
   });
 
+  it("does not claim the catalogue is empty while it is loading", () => {
+    const html = renderToStaticMarkup(
+      <HomeView listings={[]} trustTests={[]} error={null} loading />,
+    );
+    expect(html).toContain("Reading recent marks");
+    expect(html).not.toContain("No marks yet.");
+  });
+
   it("shows an empty state without listings", () => {
     const html = renderToStaticMarkup(<HomeView listings={[]} trustTests={[]} error={null} />);
     expect(html).toContain("No marks yet.");

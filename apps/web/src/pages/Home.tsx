@@ -50,10 +50,12 @@ export function HomeView({
   listings,
   trustTests,
   error,
+  loading = false,
 }: {
   listings: Listing[];
   trustTests: TrustTest[];
   error: string | null;
+  loading?: boolean;
 }) {
   return (
     <>
@@ -99,7 +101,10 @@ export function HomeView({
         <section className="marks" aria-labelledby="marks-heading">
           <h2 id="marks-heading">Recent marks</h2>
           {error ? <p className="state-note">{error}</p> : null}
-          {!error && listings.length === 0 ? <p className="state-note">No marks yet.</p> : null}
+          {loading ? <p className="state-note">Reading recent marks…</p> : null}
+          {!loading && !error && listings.length === 0 ? (
+            <p className="state-note">No marks yet.</p>
+          ) : null}
           <ol className="mark-list">
             {listings.map((listing) => (
               <li className="mark-row" key={`${listing.name}@${listing.version}`}>
@@ -192,6 +197,7 @@ export function HomeView({
 export function Home() {
   const [catalogue, setCatalogue] = useState<Catalogue>({ listings: [], trustTests: [] });
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -205,11 +211,21 @@ export function Home() {
       })
       .catch((reason: Error) => {
         if (!cancelled) setError(reason.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  return <HomeView listings={catalogue.listings} trustTests={catalogue.trustTests} error={error} />;
+  return (
+    <HomeView
+      listings={catalogue.listings}
+      trustTests={catalogue.trustTests}
+      error={error}
+      loading={loading}
+    />
+  );
 }

@@ -25,6 +25,10 @@ interface HistoryEvent {
   publishedAt: string;
 }
 
+function dateLabel(value: string): string {
+  return value.slice(0, 10);
+}
+
 const BASE_LINES = (manifest: string, keyOwner: string): LedgerLine[] => [
   { label: "Contents", value: manifest, check: "ok" },
   { label: "Signed by key", value: "skillmark:v1 / ed25519 / ab12…ef", check: "ok" },
@@ -192,7 +196,9 @@ export function ProvenanceView({ data, loading, error, fixture, history = [] }: 
                 <ol className="ledger">
                   {history.map((event) => (
                     <li className="ledger-row" key={`${event.version}-${event.manifestHash}`}>
-                      <span className="ledger-label">{event.publishedAt}</span>
+                      <span className="ledger-label" title={event.publishedAt}>
+                        {dateLabel(event.publishedAt)}
+                      </span>
                       <span className="ledger-value">
                         {event.version}
                         <span className="ledger-detail">{event.manifestHash}</span>
