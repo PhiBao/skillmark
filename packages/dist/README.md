@@ -6,17 +6,11 @@ Accountable skill publishing for Hermes. A community skill installs only if an I
 
 ## Install
 
-Until npm publication, install the tested GitHub release asset:
-
-```bash
-npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
-```
-
-After npm publication:
-
 ```bash
 npm i -g skillmark@0.3.1
 ```
+
+The same tarball and its SHA256 checksum remain on the [GitHub release](https://github.com/PhiBao/skillmark/releases/tag/v0.3.1) for audit.
 
 Then:
 

@@ -2,7 +2,7 @@
   "schema": "skillmark/sig/v1",
   "statement": {
     "schema": "skillmark/statement/v1",
-    "manifestHash": "sha256:f7167611cfdf7e7cab0b6dcc6c6e6af470992058a3053da9fdd725dae62a4c38",
+    "manifestHash": "sha256:0649890734f589a9f33dd4a5ea3a3b1b82f47ec57de44680e443af7224ca8b53",
     "name": "skillmark-setup",
     "version": "1.0.0",
     "network": "ccd:4221332d34e1694168c2a0c0b3fd0f27",
@@ -15,7 +15,7 @@
       "key_type": "ed25519",
       "public_key_hex": "4a65d905b10ccb6230246db3ff278ac9e86c3f887e7134cfd112e11e0954b632"
     },
-    "issuedAt": "2026-11-26T03:26:21.576Z"
+    "issuedAt": "2026-11-26T05:21:41.187Z"
   },
-  "signature_hex": "836c8604891688c8cca990451dbaa27702ada240bf751210efb350ce279ce6587fee72c7ec8b8dc2cc588fcf36ca6f8b1ee91981b080091e78a896d2fe458e08"
+  "signature_hex": "90ee7ad5e8121709a2ebe403892cb7d63ecbf8c92708b3964507da6a77e07818f255fe1cbd2010ec3df814f1c4c2640a6aff721012761873d84c106ea9e22b00"
 }

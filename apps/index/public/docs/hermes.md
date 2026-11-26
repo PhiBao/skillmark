@@ -12,25 +12,11 @@ You are an agent setting up Skillmark on a Hermes host. Follow these steps in or
 
 Installing a global npm package changes the machine. Ask your human, then run:
 
-Until npm publication, use the tested GitHub release asset:
-
 ```bash
-npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
+npm i -g skillmark@0.3.1
 ```
 
-If npm refuses remote URLs with `EALLOWREMOTE`, download the same asset, verify its published SHA256, and install from the local file:
-
-```bash
-curl -fsSL -o /tmp/skillmark-0.3.1.tgz \
-  https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
-sha256sum /tmp/skillmark-0.3.1.tgz
-# expected: 6ebf082a108d716e507bd01658b7b4bfc9ff57bf257e2dd74f7e2f8ec8bc14df
-npm i -g /tmp/skillmark-0.3.1.tgz
-```
-
-This is byte-identical to the release asset. Some Hermes hosts also block transitive `postinstall` scripts through npm's `allowScripts`; the CLI still works.
-
-After npm publication, `npm i -g skillmark@0.3.1` also works.
+The same tarball and checksum are on the GitHub release for audit. If this host blocks remote npm installs, download that asset, verify its SHA256, and install the local file. Blocked transitive `postinstall` scripts do not affect the CLI.
 
 Free-only mode needs no wallet. Paid installs need a testnet Concordium wallet export that your human creates and places themselves (see step 5).
 

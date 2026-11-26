@@ -73,16 +73,24 @@ A unit test proves a temporary chain read failure leaves the skill installed, re
 
 The founder installed `v0.3.1` on their Hermes host and reported:
 
-- npm rejected the remote tarball URL with `EALLOWREMOTE`; they downloaded the same release asset with `curl`, matched SHA256 `6ebf082a…c14df`, and installed from the local file. No npm publication or remote fetch was needed.
+- npm rejected the remote tarball URL with `EALLOWREMOTE`; they downloaded the release asset with `curl`, matched its published SHA256, and installed from the local file. No remote fetch was needed. The release asset was rebuilt later with an npm-first README, so the current checksum is `ee58282c53dd73…731a`; the bundled binaries and behavior are unchanged.
 - `skillmark --version` returned `0.3.1`; config and state directories were created with modes 0600 and 0700.
 - `hermes mcp test skillmark` discovered all six tools. An already-running chat session did not see newly added tools, so the tools were driven over stdio for validation; a gateway/session restart is needed for native tool injection in normal use.
 - `verify_skill` returned VERIFIED for `invoice-parser`; `install_skill` returned `Hermes scanner: safe · installed`; `protection_status` reported automatic 60-second auditing.
 - No wallet was created, no paid skill was touched, and the hourly cron was not enabled at the founder's request.
 
-This closes H1/T38. The local and cloud Hermes runs used the same published release asset.
+This closes H1/T38. The local and cloud Hermes runs used the same bundled binaries.
+
+## npm publication (H9)
+
+`skillmark@0.3.1` was published to npm with the human-provided token through an ephemeral config outside the repository. `npm view skillmark version` returns `0.3.1`, `dist-tags.latest` is `0.3.1`, and a clean global install of `skillmark@0.3.1` reported `0.3.1` for both binaries. No token or npm config was written into the repo.
+
+## Public demo video (H7)
+
+A 95.9 second, 1920x1080 H.264/AAC video was generated from the real product surfaces using `~/open-video-demo`. It shows the live catalogue, provenance ledger, publisher receipt for `cafcf2c0…`, verbatim CLI verification output, the founder's Hermes install result, and the labelled refusal checks. It does not revoke a live key or invent a transaction. Burned-in subtitles and a sidecar SRT are included.
+
+QA output: `PASS  no issues`; loudness mean `-17.4 dB`, max `-1.5 dB`. Contact sheet and all eight mid-segment frames were inspected. The MP4 and SRT are attached to the `v0.3.1` GitHub release.
 
 ## Still needs the founder
 
-- **H9:** publish `skillmark@0.3.1` to npm. The tarball is built and tested, but the agent does not publish.
-- **H7:** record the founder's demo from `docs/demo-script.md`; no synthetic footage is used.
 - **H8:** external author validation. No replies have been fabricated.

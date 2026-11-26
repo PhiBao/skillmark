@@ -2,23 +2,11 @@
 
 ## Install and connect
 
-Until npm publication, install the tested GitHub release asset:
-
 ```bash
-npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
+npm i -g skillmark@0.3.1
 ```
 
-If npm rejects remote URLs with `EALLOWREMOTE`, download and verify the same asset, then install the local file:
-
-```bash
-curl -fsSL -o /tmp/skillmark-0.3.1.tgz \
-  https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
-sha256sum /tmp/skillmark-0.3.1.tgz
-# 6ebf082a108d716e507bd01658b7b4bfc9ff57bf257e2dd74f7e2f8ec8bc14df
-npm i -g /tmp/skillmark-0.3.1.tgz
-```
-
-After npm publication, use `npm i -g skillmark@0.3.1` instead.
+For audit, the same tarball and checksum are on the GitHub release. Locked-down npm hosts that reject remote installs can download that asset, verify its SHA256, and install the local file.
 
 ```bash
 skillmark init --dry-run

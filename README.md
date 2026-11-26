@@ -6,14 +6,14 @@
 - **Provenance page:** https://skillmark-index.onrender.com/s/invoice-parser/1.0.0
 - **Publisher record:** https://skillmark-index.onrender.com/p/45jkbocxBigmrb4m1UGbv3JabCsaFRyDRfRRRLC5wLwyuiUa5q
 - **Paid skill:** https://skillmark-index.onrender.com/s/meeting-notes/1.0.0
-- **Demo video:** recorded by the founder from [`docs/demo-script.md`](docs/demo-script.md) (H7). The script is finalised in T34; no synthetic footage is used.
+- **Demo video (1:36):** https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-demo.mp4 ([subtitles](https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-demo.srt)). Built from the live app and real CLI/Hermes output; no synthetic transactions.
 - **Repository:** https://github.com/PhiBao/skillmark
 - **GitHub release package:** https://github.com/PhiBao/skillmark/releases/tag/v0.3.1
 
 ## Try it in 60 seconds
 
 1. Open the provenance page above. Six ruled lines show the contents hash, signing key, key owner, key status, agent badge and paid installs, each with its own check and explorer link. Release and settlement history sit below; publisher links open observed keys and versions.
-2. In a Hermes with Node 22, install the tested GitHub release asset until npm publish (H9) is complete: `npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz`. If npm rejects remote URLs, [use the curl-and-verify fallback](docs/hermes-setup.md). Then run `skillmark init` and add the printed `mcp_servers` block. Ask Hermes: “Verify invoice-parser with Skillmark and install it.”
+2. In a Hermes with Node 22, run `npm i -g skillmark@0.3.1`, then `skillmark init` and add the printed `mcp_servers` block. Ask Hermes: “Verify invoice-parser with Skillmark and install it.” The checksummed tarball is also on the [GitHub release](https://github.com/PhiBao/skillmark/releases/tag/v0.3.1).
 3. Open the explorer links below: the CIS-8 key registration, a revocation, a sponsored paid delivery, and the 45-byte log anchor.
 
 **Proof links (testnet):**
@@ -147,7 +147,7 @@ Environment: copy `.env.example` and fill only what you need. Secrets (wallet ex
 
 Deployed: https://skillmark-index.onrender.com
 
-Demo flow (≤ 3:00) and shot list: [`docs/demo-script.md`](docs/demo-script.md). Rehearsal log is added in T34. The demo publisher and both buyers are operated by the Skillmark team (D15) and this is shown on screen.
+The public video above follows the flow in [`docs/demo-script.md`](docs/demo-script.md) without spending testnet funds or revoking a live key. The demo publisher and buyers are operated by the Skillmark team (D15), and the video keeps that limit on screen.
 
 ## Verification labels
 
@@ -160,8 +160,9 @@ Demo flow (≤ 3:00) and shot list: [`docs/demo-script.md`](docs/demo-script.md)
 | `tampered/`, `unsigned/`, `env-reporter` | **Labelled fixtures**; `env-reporter` targets `example.invalid` and is never executed |
 | Hermes agent + badge | **Live testnet** CIS-8004 token 1449 / `JyP9X5PpNatg3zfjCcn3S` |
 | GitHub release `v0.3.1` | Built and tested tarball plus `SHA256SUMS`; install from the release asset |
-| npm `skillmark@0.3.1` | Ready for H9; **npm publish is human-only** |
+| npm `skillmark@0.3.1` | **Published** on npm; GitHub release keeps the checksummed tarball |
 | Hermes host onboarding (H1/T38) | **Verified on the founder's Hermes**: six MCP tools, `invoice-parser` verified/installed, `protection_status` healthy |
+| Public demo video (H7) | **95.9 seconds**, 1080p30, subtitled; MP4 and SRT on the GitHub release |
 | Unit tests with injected registry readers | **Test doubles**, labelled in code; no production path is mocked |
 
 ## Security and reliability
@@ -184,7 +185,7 @@ Demo flow (≤ 3:00) and shot list: [`docs/demo-script.md`](docs/demo-script.md)
 
 ## Roadmap
 
-1. Publish `skillmark` to npm (H9). Hermes onboarding through `llms.txt` (H1/T38) is verified; see `docs/product-validation.md`.
+1. Published `skillmark@0.3.1` to npm (H9). Hermes onboarding through `llms.txt` (H1/T38) is verified; see `docs/product-validation.md`.
 2. Recruit real authors (H8) and quote them; publisher records currently show only keys and releases observed by this index.
 3. Move the index to durable storage and add a hosted facilitator with budgets.
 4. Upstream the `verified` trust-tier patch to Hermes (RFC #40555) and add the optional PLT price rail.
