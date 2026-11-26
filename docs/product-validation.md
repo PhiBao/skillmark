@@ -26,6 +26,8 @@ Package: `skillmark@0.3.0`, installed from its packed tarball into a clean npm p
 
 The local test profile was removed after the test. The packed tarball was installed into an isolated temporary npm prefix; nothing was published. The founder's cloud Hermes was not used.
 
+The final Hermes MCP e2e passed: a real testnet-registered key installed through Hermes's scanner and a tampered bundle was refused. Its first attempt hit a transient testnet gRPC 502 during chain registration; a direct chain verify was healthy, and the unchanged test passed on retry.
+
 ## Automatic revocation quarantine
 
 With the MCP connection kept open (the same lifecycle Hermes uses):
