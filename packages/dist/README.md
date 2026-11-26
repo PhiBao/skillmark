@@ -9,18 +9,20 @@ Accountable skill publishing for Hermes. A community skill installs only if an I
 Until npm publication, install the tested GitHub release asset:
 
 ```bash
-npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.0/skillmark-0.3.0.tgz
+npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
 ```
 
 After npm publication:
 
 ```bash
-npm i -g skillmark@0.3.0
+npm i -g skillmark@0.3.1
 ```
 
 Then:
 
 ```bash
+skillmark --version
+skillmark-mcp --version
 skillmark init
 ```
 

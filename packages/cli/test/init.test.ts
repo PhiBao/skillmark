@@ -16,7 +16,7 @@ vi.mock("node:os", async (importOriginal) => ({
   homedir: () => process.env.HOME!,
 }));
 
-import { defaultConfig, init, mcpBlock } from "../src/commands/init.ts";
+import { defaultConfig, init, mcpBlock, parseAuditInterval } from "../src/commands/init.ts";
 
 const dirs: string[] = [];
 const previous = { ...process.env };
@@ -57,12 +57,34 @@ describe("skillmark init", () => {
     const configFile = join(process.env.HOME!, ".skillmark", "config.json");
     expect(existsSync(configFile)).toBe(true);
     expect((await import("node:fs")).statSync(configFile).mode & 0o777).toBe(0o600);
+    expect((await import("node:fs")).statSync(join(hermesHome, "skillmark")).mode & 0o777).toBe(
+      0o700,
+    );
     const script = join(hermesHome, "scripts", "skillmark-audit.sh");
     expect(readFileSync(script, "utf8")).toContain("skillmark-mcp audit");
     const calls = readFileSync(log, "utf8");
     expect(calls).toContain("config set security.allow_private_urls true");
     expect(calls).toContain("mcp add skillmark");
     expect(calls).toContain("cron create 0 * * * *");
+  });
+
+  it("validates the automatic audit interval", () => {
+    expect(parseAuditInterval(undefined)).toBe(60_000);
+    expect(parseAuditInterval("0")).toBe(0);
+    expect(parseAuditInterval("2000")).toBe(2_000);
+    expect(() => parseAuditInterval("-1")).toThrow(/non-negative integer/);
+    expect(() => parseAuditInterval("soon")).toThrow(/non-negative integer/);
+  });
+
+  it("fails loudly when Hermes rejects a setup command", async () => {
+    mkdirSync(process.env.HERMES_HOME!, { recursive: true });
+    const bin = join(process.env.HOME!, "hermes-bin");
+    writeFileSync(bin, "#!/usr/bin/env sh\necho rejected >&2\nexit 9\n");
+    chmodSync(bin, 0o755);
+    process.env.HERMES_BIN = bin;
+    await expect(
+      init({ dryRun: false, writeHermesConfig: true, withAuditCron: false }),
+    ).rejects.toThrow(/Hermes command failed.*rejected/);
   });
 
   it("dry-run writes nothing", async () => {

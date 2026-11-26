@@ -26,6 +26,15 @@ function activeHermesHome(): string {
   return profile ? join(homedir(), ".hermes", "profiles", profile) : join(homedir(), ".hermes");
 }
 
+export function parseAuditInterval(value = process.env.SKILLMARK_AUDIT_INTERVAL_MS): number {
+  if (value === undefined || value === "") return 60_000;
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 0) {
+    throw new Error("SKILLMARK_AUDIT_INTERVAL_MS must be a non-negative integer");
+  }
+  return parsed;
+}
+
 export function defaultConfig(indexUrl?: string): SkillmarkConfig {
   const hermesHome = activeHermesHome();
   return {
@@ -37,7 +46,7 @@ export function defaultConfig(indexUrl?: string): SkillmarkConfig {
     signingKeyFile:
       process.env.HERMES_SIGNING_KEY_FILE ?? join(homedir(), ".skillmark", "keys", "hermes.json"),
     hermesHome,
-    auditIntervalMs: Number(process.env.SKILLMARK_AUDIT_INTERVAL_MS ?? 60_000),
+    auditIntervalMs: parseAuditInterval(),
   };
 }
 
@@ -68,11 +77,9 @@ function runHermes(args: string[], input?: string): boolean {
     stdio: ["pipe", "pipe", "pipe"],
     timeout: 120_000,
   });
-  if (result.status !== 0) {
-    console.log(
-      `Hermes command failed (${args.join(" ")}): ${result.stderr || result.error?.message || result.status}`,
-    );
-    return false;
+  if (result.error || result.status !== 0) {
+    const detail = result.error?.message || result.stderr.trim() || `exit ${result.status}`;
+    throw new Error(`Hermes command failed (${args.join(" ")}): ${detail}`);
   }
   return true;
 }
@@ -136,8 +143,8 @@ export async function init(options: InitOptions): Promise<void> {
   const file = configPath();
   writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600 });
   chmodSync(file, 0o600);
-  mkdirSync(config.stateDir, { recursive: true });
-  console.log(`\nwrote ${file} (0600) and created ${config.stateDir}`);
+  mkdirSync(config.stateDir, { recursive: true, mode: 0o700 });
+  console.log(`\nwrote ${file} (0600) and created ${config.stateDir} (0700)`);
 
   if (options.writeHermesConfig || options.withAuditCron) {
     // Hermes creates config.yaml on first write; a fresh profile may not have it yet.
@@ -161,6 +168,10 @@ export async function init(options: InitOptions): Promise<void> {
     );
   }
   if (options.withAuditCron) writeAuditCron(config);
-  if (options.writeHermesConfig)
+  if (options.writeHermesConfig || options.withAuditCron) {
     console.log("Hermes config updated. Restart Hermes or reload MCP.");
+  }
+  console.log("\nNext:");
+  console.log("  hermes mcp test skillmark");
+  console.log('  Ask Hermes: "Verify invoice-parser with Skillmark and install it."');
 }

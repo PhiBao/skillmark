@@ -38,6 +38,7 @@ await build({
   ...common,
   entryPoints: ["../../apps/mcp/src/bin.ts"],
   outfile: "bin/skillmark-mcp.mjs",
+  define: { __SKILLMARK_VERSION__: JSON.stringify(pkg.version) },
 });
 
 for (const file of ["bin/skillmark.mjs", "bin/skillmark-mcp.mjs"]) chmodSync(file, 0o755);

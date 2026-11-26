@@ -1,6 +1,6 @@
 {
   "name": "skillmark",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Accountable skill publishing for Hermes: verify, install and audit signed skills, pay authors on delivery.",
   "type": "module",
   "license": "MIT",

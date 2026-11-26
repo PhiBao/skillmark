@@ -60,8 +60,17 @@ Tests cover key rotation, revoked/unreachable/unknown publishers, duplicate sett
 
 A unit test proves a temporary chain read failure leaves the skill installed, reports it as uncertain, and retries on the next audit. Only definite revocation/tampering/mismatch or missing files trigger quarantine.
 
+## Onboarding polish 0.3.1
+
+- Updated the signed `skillmark-setup` fixture to install from the GitHub release asset instead of unpublished npm, and re-signed it with the active demo key.
+- Removed manual Hermes YAML containing unexpanded `~` paths; setup now uses the exact absolute-path block printed by `skillmark init`.
+- Hermes setup command failures now stop `init` with a nonzero error instead of printing success.
+- Invalid audit intervals fail early; state directories are created with mode 0700.
+- Added `skillmark-mcp --version`; both binaries report `0.3.1`.
+- Installed the packed `0.3.1` tarball into a clean npm prefix, created a fresh local Hermes profile, discovered all six tools, verified and installed `invoice-parser`, and confirmed automatic audit status. The test profile was removed; the founder's cloud Hermes was not used.
+
 ## Still needs the founder
 
-- **H9:** publish `skillmark@0.3.0` to npm. The tarball is built and tested, but the agent does not publish.
+- **H9:** publish `skillmark@0.3.1` to npm. The tarball is built and tested, but the agent does not publish.
 - **H1:** run the one-line onboarding on the founder's cloud Hermes after H9.
 - **H8:** external author validation. No replies have been fabricated.

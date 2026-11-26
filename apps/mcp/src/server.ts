@@ -9,7 +9,7 @@ import { publishSkill } from "./tools/publish.ts";
 import { fetchAndVerify, type McpConfig, renderVerification } from "./tools/verify.ts";
 
 export function createServer(config: McpConfig): McpServer {
-  const server = new McpServer({ name: "skillmark", version: "0.1.0" });
+  const server = new McpServer({ name: "skillmark", version: "0.3.1" });
   const args = { name: z.string().min(1), version: z.string().optional() };
 
   server.tool(

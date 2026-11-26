@@ -5,10 +5,10 @@
 Until npm publication, install the tested GitHub release asset:
 
 ```bash
-npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.0/skillmark-0.3.0.tgz
+npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
 ```
 
-After npm publication, use `npm i -g skillmark@0.3.0` instead.
+After npm publication, use `npm i -g skillmark@0.3.1` instead.
 
 ```bash
 skillmark init --dry-run
@@ -45,7 +45,12 @@ Or ask Hermes to call `audit_installed` / `protection_status`.
 
 ## Verification
 
-A fresh profile should show all six tools:
+```bash
+skillmark --version
+skillmark-mcp --version
+```
+
+Both should print `0.3.1`. A fresh profile should show all six tools:
 
 - `verify_skill`
 - `install_skill`

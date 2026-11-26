@@ -15,10 +15,10 @@ Installing a global npm package changes the machine. Ask your human, then run:
 Until npm publication, use the tested GitHub release asset:
 
 ```bash
-npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.0/skillmark-0.3.0.tgz
+npm i -g https://github.com/PhiBao/skillmark/releases/download/v0.3.1/skillmark-0.3.1.tgz
 ```
 
-After npm publication, `npm i -g skillmark@0.3.0` also works.
+After npm publication, `npm i -g skillmark@0.3.1` also works.
 
 Free-only mode needs no wallet. Paid installs need a testnet Concordium wallet export that your human creates and places themselves (see step 5).
 
@@ -38,18 +38,7 @@ Editing Hermes config changes the host. With your human's OK, either run:
 skillmark init --write-hermes-config
 ```
 
-or add the printed block to `~/.hermes/config.yaml` by hand:
-
-```yaml
-mcp_servers:
-  skillmark:
-    command: skillmark-mcp
-    env:
-      SKILLMARK_INDEX_URL: https://skillmark-index.onrender.com
-      SKILLMARK_STATE_DIR: ~/.hermes/skillmark
-      HERMES_WALLET_FILE: ~/.skillmark/wallets/hermes.export
-      HERMES_SIGNING_KEY_FILE: ~/.skillmark/keys/hermes.json
-```
+or paste the exact block printed by `skillmark init` into the active profile's `config.yaml`. Keep the absolute paths and `HERMES_HOME` value it prints; do not replace them with `~`, because Hermes environment values may not expand it.
 
 Restart Hermes (or reload MCP). Confirm the tools:
 
